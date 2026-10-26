@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\{Order, User};
+
+class OrderPolicy
+{
+    public function view(User $user, Order $order): bool { return $order->user_id === $user->id; }
+    public function update(User $user, Order $order): bool { return $order->user_id === $user->id; }
+}

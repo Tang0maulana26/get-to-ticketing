@@ -1,0 +1,18 @@
+<x-layout>
+<section class="hero shell">
+    <div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> YOUR NEXT GOOD MEMORY</div><h1>Jangan cuma<br>dengerin.<br><span>Rasain langsung.</span></h1><p>Suara yang kamu suka. Orang-orang sefrekuensi.<br>Temukan konser dan jadilah bagian dari momennya.</p><a class="button" href="#events">Temukan event <span>↗</span></a><div class="hero-footnote"><span class="mini-ticket">↗</span><span>Satu tiket. Cerita yang nggak habis-habis.</span></div></div>
+    <div class="hero-art">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><span class="art-spark">✳</span><span class="art-label">MAKE ROOM<br>FOR THE MOMENT.</span>
+        @if($featured)<a href="{{ route('events.show', $featured->slug) }}" class="hero-ticket"><img src="{{ $featured->banner_url }}" alt="{{ $featured->title }}" width="800" height="600" fetchpriority="high"><div class="hero-ticket-stub"><div><span>ON OUR RADAR</span><strong>{{ $featured->title }}</strong><small>{{ $featured->start_time->format('d M Y') }} · {{ $featured->city }}</small></div><span class="ticket-code">||||||||||||</span></div></a>@else<div class="hero-ticket"><img src="{{ asset('images/poster-blue.svg') }}" alt="Ilustrasi musik The Get To" width="800" height="600"><div class="hero-ticket-stub"><strong>Good moments start here.</strong></div></div>@endif
+        <div class="art-caption"><span>LIVE IT. FEEL IT.</span><span>VOL. 01 / {{ date('Y') }}</span></div>
+    </div>
+</section>
+<div class="benefits-strip"><div class="shell"><span>✦ &nbsp; Event pilihan</span><span>↗ &nbsp; Pesan dalam beberapa langkah</span><span>◎ &nbsp; Semua tiket dalam satu tempat</span></div></div>
+<section class="shell catalog-section" id="events">
+    <div class="section-heading"><div><p class="eyebrow">FIND YOUR FREQUENCY</p><h2>Panggung berikutnya.</h2><p class="muted">Pilih pengalaman yang paling kamu banget.</p></div><span class="count-label">{{ $events->total() }} event tersedia</span></div>
+    <form method="get" class="filter-bar" action="{{ route('catalog') }}#events"><label class="search-field"><span aria-hidden="true">⌕</span><input type="search" name="q" value="{{ request('q') }}" placeholder="Cari konser atau venue..." aria-label="Cari konser atau venue" maxlength="100"></label><select name="city" aria-label="Pilih kota"><option value="">Semua kota</option>@foreach($cities as $city)<option @selected(request('city') === $city)>{{ $city }}</option>@endforeach</select>@if($categories->count()>1)<select name="category" aria-label="Kategori event"><option value="">Semua kategori</option>@foreach($categories as $category)<option value="{{ $category->slug }}" @selected(request('category') === $category->slug)>{{ $category->name }}</option>@endforeach</select>@endif<button class="button" type="submit">Cari event</button>@if(request()->hasAny(['q','city','category']))<a class="text-link" href="{{ route('catalog') }}#events">Reset</a>@endif</form>
+    <div class="event-grid">@forelse($events as $event)<x-event-card :event="$event"/>@empty<div class="empty-state"><span>⌕</span><h3>Belum ketemu yang pas.</h3><p>Coba kata kunci atau kota lain. Event baru akan tampil di sini.</p><a href="{{ route('catalog') }}" class="button secondary">Lihat semua event</a></div>@endforelse</div>
+    <div class="pagination">{{ $events->links() }}</div>
+    <div class="bottom-banner"><div><p class="eyebrow">LESS SCROLLING. MORE LIVING.</p><h2>Momen terbaik ada di depan panggung.</h2></div><a href="#events" class="button secondary">Cari momenmu ↗</a></div>
+</section>
+</x-layout>
