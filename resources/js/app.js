@@ -113,3 +113,70 @@ if (booking) {
         update();
     }
 }
+
+// Smooth scroll for anchor links with click animation
+document.addEventListener("click", (event) => {
+    const button = event.target.closest('a[href^="#"]');
+    if (!button) return;
+
+    const targetId = button.getAttribute("href");
+    if (!targetId || targetId === "#") return;
+
+    const targetElement = document.querySelector(targetId);
+    if (!targetElement) return;
+
+    event.preventDefault();
+
+    button.classList.add("clicked");
+    setTimeout(() => {
+        button.classList.remove("clicked");
+    }, 600);
+
+    targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+    });
+
+    if (history.pushState) {
+        history.pushState(null, "", targetId);
+    }
+});
+
+// Dynamic header scroll: Awal full transparan mengikuti background vintage hero,
+// semakin di-scroll bertransisi menjadi normal (solid / tidak transparan lagi)
+const initHeaderScroll = () => {
+    const header = document.querySelector(".site-header.header-home");
+    const hero = document.querySelector(".vintage-hero");
+    if (!header || !hero) return;
+
+    const onScroll = () => {
+        const scrollY = window.scrollY || window.pageYOffset;
+        // Jarak scroll transisi (0px = full transparan, 180px = solid penuh)
+        const fadeDistance = 180;
+        const ratio = Math.min(1, Math.max(0, scrollY / fadeDistance));
+
+        header.style.setProperty("--scroll-ratio", ratio);
+
+        if (ratio <= 0.02) {
+            // Awal di posisi atas: 100% full transparan
+            header.classList.remove("is-scrolling", "is-solid");
+        } else if (ratio >= 0.98) {
+            // Melewati scroll / area event: Solid normal
+            header.classList.remove("is-scrolling");
+            header.classList.add("is-solid");
+        } else {
+            // Selama scroll bertransisi gradual
+            header.classList.remove("is-solid");
+            header.classList.add("is-scrolling");
+        }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+};
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initHeaderScroll);
+} else {
+    initHeaderScroll();
+}
