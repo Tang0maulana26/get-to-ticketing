@@ -143,6 +143,62 @@ class TicketingTest extends TestCase
         $this->actingAs($user)->post('/orders/'.$order->number.'/demo-payment')->assertSessionHasErrors('order');
         $this->assertSame('expired',$order->fresh()->status); $this->assertSame(10,$type->fresh()->stock); $this->assertSame(0,Ticket::count());
     }
+    public function test_payment_is_rejected_when_event_is_no_longer_on_sale(): void
+    {
+        config(['ticketing.demo_payments' => true]);
+        $user = User::factory()->create();
+
+        foreach (['deleted', 'archived'] as $change) {
+            $event = $this->event();
+            $type = $this->type($event);
+            $order = $this->book($user, $event, $type, 2);
+            $change === 'deleted' ? $event->delete() : $event->update(['status' => 'archived']);
+
+            $this->actingAs($user)->post('/orders/'.$order->number.'/demo-payment')->assertSessionHasErrors('order');
+
+            $this->assertSame('cancelled', $order->fresh()->status);
+            $this->assertSame(10, $type->fresh()->stock);
+        }
+        $this->assertSame(0, Ticket::count());
+    }
+    public function test_checkout_frees_expired_reservations_of_the_same_event_only(): void
+    {
+        $event = $this->event();
+        $type = $this->type($event, ['capacity' => 2, 'stock' => 2]);
+        $other = $this->event();
+        $otherType = $this->type($other);
+        $stale = $this->book(User::factory()->create(), $event, $type, 2);
+        $unrelated = $this->book(User::factory()->create(), $other, $otherType, 1);
+        Order::query()->update(['expires_at' => now()->subMinute()]);
+
+        // Viewing pages must not mutate other customers' orders.
+        $this->get('/events/'.$event->slug)->assertOk();
+        $this->assertSame('pending', $stale->fresh()->status);
+
+        $this->actingAs(User::factory()->create())
+            ->post('/events/'.$event->id.'/checkout', ['tickets' => [$type->id => 2], 'checkout_key' => (string) Str::uuid()])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('expired', $stale->fresh()->status);
+        $this->assertSame('pending', $unrelated->fresh()->status);
+        $this->assertSame(0, $type->fresh()->stock);
+    }
+    public function test_cancelling_a_paid_order_keeps_it_paid(): void
+    {
+        config(['ticketing.demo_payments' => true]);
+        $event = $this->event(); $type = $this->type($event); $user = User::factory()->create();
+        $order = $this->book($user, $event, $type);
+        app(BookingService::class)->payDemo($order);
+
+        $this->actingAs($user)->post('/orders/'.$order->number.'/cancel')->assertSessionHas('success', 'Pesanan ini tidak dapat dibatalkan.');
+        $this->assertSame('paid', $order->fresh()->status);
+    }
+    public function test_env_example_targets_postgresql_with_demo_payments_off(): void
+    {
+        $example = file_get_contents(base_path('.env.example'));
+        $this->assertStringContainsString("DB_CONNECTION=pgsql", $example);
+        $this->assertStringContainsString("DEMO_PAYMENTS=false", $example);
+    }
     public function test_demo_payment_is_disabled_by_configuration(): void
     {
         config(['ticketing.demo_payments'=>false]);

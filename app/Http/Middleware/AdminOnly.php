@@ -9,7 +9,8 @@ class AdminOnly
 {
     public function handle(Request $request, Closure $next)
     {
-        abort_unless($request->user()?->role === 'admin', 403);
+        abort_unless($request->user()?->isAdmin(), 403);
+
         return $next($request);
     }
 }
