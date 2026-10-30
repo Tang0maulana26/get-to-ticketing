@@ -39,11 +39,11 @@
                 <h2>Next on stage.</h2>
                 <p class="muted">Find your sound and secure your spot in the crowd.</p>
             </div>
-            <span class="count-label">{{ $events->total() }} events available</span>
+            <span class="count-label" data-catalog-count>{{ $events->total() }} events available</span>
         </div>
 
         <!-- Filter & Search Bar -->
-        <form method="get" class="filter-bar" action="{{ route('catalog') }}#events">
+        <form method="get" class="filter-bar" data-live-filter action="{{ route('catalog') }}#events">
             <label class="search-field">
                 <span aria-hidden="true">⌕</span>
                 <input type="search"
@@ -79,23 +79,8 @@
             @endif
         </form>
 
-        <!-- Event Cards Grid -->
-        <div class="event-grid">
-            @forelse($events as $event)
-            <x-event-card :event="$event" />
-            @empty
-            <div class="empty-state">
-                <span>⌕</span>
-                <h3>No events found.</h3>
-                <p>Try searching for a different city or keyword. New events will appear here.</p>
-                <a href="{{ route('catalog') }}#events" class="button secondary">View all events</a>
-            </div>
-            @endforelse
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination">
-            {{ $events->links() }}
+        <div data-catalog-results>
+            @include('catalog.partials.results')
         </div>
 
         <!-- Bottom Banner -->

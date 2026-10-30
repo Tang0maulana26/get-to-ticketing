@@ -31,6 +31,13 @@ class CatalogController extends Controller
             ->paginate(6)
             ->withQueryString();
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('catalog.partials.results', ['events' => $events])->render(),
+                'total' => $events->total(),
+            ])->header('Cache-Control', 'no-store')->header('Vary', 'Accept');
+        }
+
         return view('catalog.index', [
             'events' => $events,
             'featured' => (clone $upcoming)->where('featured', true)->orderBy('start_time')->first(),

@@ -29,7 +29,9 @@ class AuthController extends Controller
         }
         $request->session()->regenerate();
 
-        return redirect()->intended(route('orders.index'));
+        $target = redirect()->intended(route('orders.index'));
+
+        return $request->expectsJson() ? response()->json(['redirect' => $target->getTargetUrl()]) : $target;
     }
 
     public function store(RegisterRequest $request)

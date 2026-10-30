@@ -6,27 +6,222 @@ document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
     } catch (_) {}
 });
 
-// Modal helpers
-document.querySelectorAll("[data-open-modal]").forEach((button) => {
-    button.addEventListener("click", () => {
-        document.getElementById(button.dataset.openModal)?.showModal();
-    });
+// Modal helpers (delegated so they keep working after partial page refreshes)
+document.addEventListener("click", (event) => {
+    const opener = event.target.closest("[data-open-modal]");
+    if (opener) {
+        document.getElementById(opener.dataset.openModal)?.showModal();
+        return;
+    }
+    if (event.target.closest("[data-close-modal]")) {
+        event.target.closest("dialog")?.close();
+    }
 });
 
-document.querySelectorAll("[data-close-modal]").forEach((button) => {
-    button.addEventListener("click", () => {
-        button.closest("dialog")?.close();
-    });
-});
+// Fetch API helpers -----------------------------------------------------
+const csrfToken = (form) =>
+    form?.querySelector('input[name="_token"]')?.value ??
+    document.querySelector('meta[name="csrf-token"]')?.content ??
+    "";
 
-// Confirmation dialogs
-document.querySelectorAll("[data-confirm]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
-        if (!window.confirm(form.dataset.confirm)) {
-            event.preventDefault();
+const requestJson = async (url, { method = "GET", body, form, signal } = {}) => {
+    const response = await fetch(url, {
+        method,
+        signal,
+        credentials: "same-origin",
+        headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            ...(body ? { "Content-Type": "application/json" } : {}),
+            ...(method !== "GET" ? { "X-CSRF-TOKEN": csrfToken(form) } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+    });
+    let data = {};
+    try {
+        data = await response.json();
+    } catch (_) {}
+    return { ok: response.ok, status: response.status, data };
+};
+
+const showNotice = (message, type = "success") => {
+    const main = document.getElementById("main");
+    if (!main) return;
+    main.querySelector("[data-live-notice]")?.remove();
+    const wrap = document.createElement("div");
+    wrap.className = "shell";
+    wrap.dataset.liveNotice = "";
+    const box = document.createElement("div");
+    box.className = `notice ${type}`;
+    box.setAttribute("role", type === "error" ? "alert" : "status");
+    box.textContent = message;
+    wrap.append(box);
+    main.prepend(wrap);
+    if (type === "success") setTimeout(() => wrap.remove(), 5000);
+};
+
+const clearFieldErrors = (form) => {
+    form.querySelectorAll(".field-error").forEach((el) => el.remove());
+    form.querySelectorAll("[aria-invalid]").forEach((el) =>
+        el.removeAttribute("aria-invalid"),
+    );
+};
+
+const showFieldErrors = (form, errors) => {
+    let general = [];
+    Object.entries(errors).forEach(([name, messages]) => {
+        const input = form.querySelector(`[name="${CSS.escape(name)}"]`);
+        if (!input) {
+            general = general.concat(messages);
+            return;
         }
+        input.setAttribute("aria-invalid", "true");
+        const hint = document.createElement("small");
+        hint.className = "field-error";
+        hint.textContent = messages[0];
+        (input.closest("label") ?? input.parentElement).append(hint);
     });
+    return general;
+};
+
+// Forms marked data-fetch-form submit as JSON; they still work without JS.
+document.addEventListener("submit", async (event) => {
+    const form = event.target.closest("form[data-fetch-form]");
+    if (!form) return;
+    event.preventDefault();
+
+    if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;
+    if (form.dataset.busy) return;
+
+    const button = form.querySelector('button:not([type="button"])');
+    const label = button?.textContent;
+    form.dataset.busy = "1";
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Memproses…";
+    }
+    clearFieldErrors(form);
+
+    try {
+        const body = Object.fromEntries(new FormData(form));
+        const { ok, status, data } = await requestJson(form.action, {
+            method: "POST",
+            body,
+            form,
+        });
+
+        if (ok) {
+            if (form.dataset.redirectFrom && data[form.dataset.redirectFrom]) {
+                window.location.assign(data[form.dataset.redirectFrom]);
+                return; // keep the button disabled while navigating
+            }
+            form.closest("dialog")?.close();
+            await refreshTarget();
+            showNotice(data.message ?? "Berhasil disimpan.");
+        } else if (status === 422 && data.errors) {
+            const general = showFieldErrors(form, data.errors);
+            if (general.length) showNotice(general.join(" "), "error");
+        } else if (status === 419) {
+            showNotice("Sesi habis. Muat ulang halaman lalu coba lagi.", "error");
+        } else {
+            showNotice(data.message || "Terjadi kesalahan. Coba lagi.", "error");
+        }
+    } catch (_) {
+        showNotice("Koneksi bermasalah. Coba lagi.", "error");
+    } finally {
+        delete form.dataset.busy;
+        if (button && button.isConnected) {
+            button.disabled = false;
+            button.textContent = label;
+        }
+    }
 });
+
+// Re-fetch the current page and swap only the section that changed.
+const refreshTarget = async () => {
+    const current = document.querySelector("[data-refresh-target]");
+    if (!current) return;
+    const response = await fetch(window.location.href, {
+        credentials: "same-origin",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+    });
+    const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+    const fresh = doc.getElementById(current.id);
+    if (fresh) current.replaceWith(fresh);
+};
+
+// Live catalog filter: debounce, cancel stale requests, keep URL shareable.
+const filterForm = document.querySelector("form[data-live-filter]");
+const results = document.querySelector("[data-catalog-results]");
+if (filterForm && results) {
+    const counter = document.querySelector("[data-catalog-count]");
+    let timer;
+    let controller;
+
+    const load = async (url, push = true) => {
+        controller?.abort();
+        controller = new AbortController();
+        results.setAttribute("aria-busy", "true");
+        results.style.opacity = "0.5";
+        try {
+            const { ok, data } = await requestJson(url, { signal: controller.signal });
+            if (!ok || typeof data.html !== "string") throw new Error("bad response");
+            results.innerHTML = data.html;
+            if (counter) counter.textContent = `${data.total} events available`;
+            if (push) history.pushState(null, "", url);
+        } catch (error) {
+            if (error.name === "AbortError") return;
+            window.location.assign(url); // graceful fallback to full page
+            return;
+        }
+        results.removeAttribute("aria-busy");
+        results.style.opacity = "";
+    };
+
+    const currentUrl = () => {
+        const params = new URLSearchParams(new FormData(filterForm));
+        [...params].forEach(([key, value]) => value === "" && params.delete(key));
+        const query = params.toString();
+        return filterForm.getAttribute("action").split("#")[0] + (query ? `?${query}` : "");
+    };
+
+    filterForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearTimeout(timer);
+        load(currentUrl());
+    });
+    filterForm.addEventListener("input", (event) => {
+        if (event.target.type !== "search") return;
+        clearTimeout(timer);
+        timer = setTimeout(() => load(currentUrl()), 350);
+    });
+    filterForm.addEventListener("change", () => {
+        clearTimeout(timer);
+        load(currentUrl());
+    });
+
+    results.addEventListener("click", (event) => {
+        const link = event.target.closest(".pagination a[href]");
+        if (!link) return;
+        event.preventDefault();
+        load(link.href);
+    });
+
+    window.addEventListener("popstate", () => {
+        const params = new URLSearchParams(window.location.search);
+        [...filterForm.elements].forEach((el) => {
+            if (el.name) el.value = params.get(el.name) ?? "";
+        });
+        load(window.location.pathname + window.location.search, false);
+    });
+}
+
+// Confirmation dialogs for classic (non-fetch) forms
+document.addEventListener("submit", (event) => {
+    const form = event.target.closest("form[data-confirm]:not([data-fetch-form])");
+    if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
+});
+
 
 // Booking form interactivity & ticket stepper
 const booking = document.querySelector("[data-booking-form]");

@@ -17,7 +17,8 @@
                 <h2>Tampilan & publikasi</h2><label class="field"><span>Kategori event</span><select name="category_id">@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id',$event->category_id)==$category->id)>{{ $category->name }}</option>@endforeach</select></label><label class="field"><span>Status</span><select name="status">@foreach(['draft'=>'Draft','published'=>'Terbit','archived'=>'Arsip'] as $value=>$label)<option value="{{ $value }}" @selected(old('status',$event->status ?? 'draft')===$value)>{{ $label }}</option>@endforeach</select></label><label class="check-field"><input type="checkbox" name="featured" value="1" @checked(old('featured',$event->featured))>Tampilkan sebagai event unggulan</label>@if($event->exists)<img src="{{ $event->banner_url }}" alt="Banner saat ini" class="rounded-lg mb-4" width="800" height="600">@endif<label class="field"><span>Banner utama</span><input type="file" name="banner_file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG, WebP. Maks. 4 MB. Rasio anjuran 3:2.</small></label><label class="field"><span>Tambah galeri (opsional)</span><input type="file" name="gallery[]" multiple accept="image/jpeg,image/png,image/webp"><small>Maks. 6 gambar per unggahan, 4 MB per gambar.</small></label>@if($event->exists && $event->images->isNotEmpty())<div class="admin-gallery">@foreach($event->images as $image)<div><img src="{{ Storage::disk('public')->url($image->path) }}" alt="Galeri {{ $loop->iteration }}"><label class="field"><span>Urutan</span><input name="image_positions[{{ $image->id }}]" type="number" value="{{ $image->position }}" min="0" max="99"></label><label class="check-field"><input type="checkbox" name="remove_images[]" value="{{ $image->id }}">Hapus gambar</label></div>@endforeach</div>@endif<button class="button full">{{ $event->exists ? 'Simpan perubahan' : 'Buat event & lanjut atur tiket' }} →</button>
             </div>
         </form>
-        @if($event->exists)<div class="section-heading mt-10">
+        @if($event->exists)<div id="ticket-section" data-refresh-target>
+        <div class="section-heading mt-10">
             <div>
                 <h2>Pilihan tiket</h2>
                 <p class="muted">Nama, harga, dan kuota dapat diubah. Pesanan lama tetap memakai data saat pembelian.</p>
@@ -43,7 +44,7 @@
                         <td>{{ $ticket->active ? 'Aktif' : 'Nonaktif' }}</td>
                         <td>
                             <div class="table-actions"><button data-open-modal="ticket-{{ $ticket->id }}" type="button">Edit</button>
-                                <form action="{{ route('admin.tickets.destroy',[$event,$ticket]) }}" method="post" data-confirm="Hapus pilihan tiket? Jika sudah dibeli, tiket akan dinonaktifkan.">@csrf @method('DELETE')<button>Hapus</button></form>
+                                <form action="{{ route('admin.tickets.destroy',[$event,$ticket]) }}" method="post" data-fetch-form data-confirm="Hapus pilihan tiket? Jika sudah dibeli, tiket akan dinonaktifkan.">@csrf @method('DELETE')<button>Hapus</button></form>
                             </div>
                         </td>
                     </tr>@empty<tr>
@@ -53,6 +54,7 @@
         </div>
         @include('admin.events.ticket-modal',['ticket'=>new \App\Models\TicketCategory,'modalId'=>'ticket-new'])
         @foreach($event->ticketCategories as $ticket)@include('admin.events.ticket-modal',['ticket'=>$ticket,'modalId'=>'ticket-'.$ticket->id])@endforeach
+        </div>
         @endif
     </section>
 </x-layout>

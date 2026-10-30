@@ -45,6 +45,30 @@ class TicketingTest extends TestCase
         $this->get('/events/'.$draft->slug)->assertNotFound();
         $this->get('/events/'.$event->slug)->assertOk()->assertSee('Pilih tiketmu');
     }
+    public function test_catalog_filter_returns_json_fragment(): void
+    {
+        $event = $this->event(['title' => 'Visible concert']); $this->type($event);
+        $this->event(['title' => 'Bandung show', 'city' => 'Bandung']);
+        $this->getJson('/?city=Jakarta')->assertOk()->assertJsonPath('total', 1)
+            ->assertSee('Visible concert', false)->assertDontSee('Bandung show', false);
+    }
+    public function test_login_returns_json_redirect_and_validation_errors(): void
+    {
+        $user = User::factory()->create(['password'=>'SafePassword123']);
+        $this->postJson('/login',['email'=>$user->email,'password'=>'wrong'])->assertUnprocessable()->assertJsonValidationErrors('email');
+        $this->postJson('/login',['email'=>$user->email,'password'=>'SafePassword123'])->assertOk()->assertJsonStructure(['redirect']);
+        $this->assertAuthenticatedAs($user);
+    }
+    public function test_admin_ticket_json_flow_keeps_validation_and_authorization(): void
+    {
+        $event = $this->event();
+        $payload = ['name'=>'VIP','price'=>100000,'capacity'=>20,'max_per_order'=>4,'active'=>1];
+        $this->actingAs(User::factory()->create())->postJson("/admin/events/{$event->id}/ticket-categories",$payload)->assertForbidden();
+        $this->actingAs($this->admin());
+        $this->postJson("/admin/events/{$event->id}/ticket-categories",['name'=>''] + $payload)->assertUnprocessable()->assertJsonValidationErrors('name');
+        $this->postJson("/admin/events/{$event->id}/ticket-categories",$payload)->assertOk()->assertJsonStructure(['message']);
+        $this->assertDatabaseHas('ticket_categories',['event_id'=>$event->id,'name'=>'VIP','stock'=>20]);
+    }
     public function test_registration_cannot_assign_admin_role(): void
     {
         $this->post('/register', ['name'=>'Customer', 'email'=>'new@example.test', 'password'=>'SafePassword123', 'password_confirmation'=>'SafePassword123', 'role'=>'admin'])->assertRedirect('/');
