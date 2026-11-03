@@ -26,6 +26,11 @@
     "Buka Pembayaran Xendit ↗": "Open Xendit Checkout ↗",
     "Cek Status Pembayaran": "Check Payment Status",
     "Simulasi Instan Portofolio": "Instant Demo Simulation",
-    "Simulasikan pembayaran instan →": "Simulate instant payment →"
+    "Simulasikan pembayaran instan →": "Simulate instant payment →",
+    "E-Ticket hanya dapat diunduh untuk pesanan yang telah lunas.": "E-Ticket can only be downloaded for paid orders.",
+    "Email bukti tiket hanya dapat dikirim untuk pesanan yang telah lunas.": "Ticket proof email can only be sent for paid orders.",
+    "Alamat email penerima tidak ditemukan.": "Recipient email address not found.",
+    "Bukti pembayaran dan E-Ticket (PDF) telah dikirim ke email :email.": "Payment receipt and E-Ticket (PDF) have been sent to :email.",
+    "Gagal mengirim email. Silakan coba beberapa saat lagi.": "Failed to send email. Please try again shortly."
 }
 

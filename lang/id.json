@@ -97,6 +97,7 @@
     "Active Xendit Invoice": "Tagihan Xendit Aktif",
     "An invoice has been generated on Xendit. Please continue to the checkout simulator or check payment confirmation.": "Tagihan pembayaran telah dibuat di Xendit. Silakan lanjutkan ke simulator atau periksa konfirmasi pembayaran.",
     "Pay via Xendit →": "Bayar via Xendit →",
+    "Pay via Xendit Sandbox →": "Bayar via Xendit Sandbox →",
     "You will be redirected to official Xendit checkout for secure test payments.": "Diarahkan langsung ke checkout resmi Xendit untuk pengujian pembayaran aman.",
     "Open Xendit Checkout ↗": "Buka Pembayaran Xendit ↗",
     "Check Payment Status": "Cek Status Pembayaran",
@@ -282,5 +283,15 @@
     "All banner images and gallery posters": "Semua gambar banner dan galeri poster",
     "Ticket categories (Regular, VIP, etc) and prices": "Kategori tiket (Regular, VIP, dll) dan harga",
     "Administrator accounts and registered user accounts": "Akun Administrator dan akun pengguna terdaftar",
-    "← Admin Overview": "← Ringkasan Admin"
+    "← Admin Overview": "← Ringkasan Admin",
+    "Download E-Ticket (PDF)": "Unduh E-Ticket (PDF)",
+    "Download PDF": "Unduh PDF",
+    "Send to Email": "Kirim ke Email",
+    "Send copy of invoice & e-ticket to your email": "Kirim salinan bukti pembayaran & e-ticket ke email Anda",
+    "View Details": "Lihat Detail",
+    "E-Ticket hanya dapat diunduh untuk pesanan yang telah lunas.": "E-Ticket hanya dapat diunduh untuk pesanan yang telah lunas.",
+    "Email bukti tiket hanya dapat dikirim untuk pesanan yang telah lunas.": "Email bukti tiket hanya dapat dikirim untuk pesanan yang telah lunas.",
+    "Alamat email penerima tidak ditemukan.": "Alamat email penerima tidak ditemukan.",
+    "Bukti pembayaran dan E-Ticket (PDF) telah dikirim ke email :email.": "Bukti pembayaran dan E-Ticket (PDF) telah dikirim ke email :email.",
+    "Gagal mengirim email. Silakan coba beberapa saat lagi.": "Gagal mengirim email. Silakan coba beberapa saat lagi."
 }

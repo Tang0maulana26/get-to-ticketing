@@ -192,6 +192,17 @@ class BookingService
         if ($error) {
             $this->fail('order', $error);
         }
+
+        // Send payment confirmation and e-ticket email with attached PDF (failsafe)
+        try {
+            $order->refresh()->loadMissing(['items.tickets', 'user']);
+            $recipientEmail = $order->customer_email ?? $order->user?->email;
+            if ($recipientEmail) {
+                \Illuminate\Support\Facades\Mail::to($recipientEmail)->send(new \App\Mail\OrderPaidMail($order));
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /**

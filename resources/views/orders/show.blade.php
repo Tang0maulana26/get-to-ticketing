@@ -47,7 +47,7 @@
                             <p class="muted small-copy mt-0.5">{{ __('Xendit (Virtual Account, QRIS, E-Wallet, Card)') }}</p>
                         </div>
                         <span class="badge badge-published" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">
-                            {{ __('Xendit') }}
+                            {{ __('Xendit Test Sandbox') }}
                         </span>
                     </div>
 
@@ -75,7 +75,7 @@
                             <form action="{{ route('orders.xendit.checkout', $order) }}" method="post">
                                 @csrf
                                 <button type="submit" class="button full" style="background: #0f62fe; border-color: #0f62fe; color: #ffffff; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                                    <span>{{ __('Pay via Xendit →') }}</span>
+                                    <span>{{ __('Pay via Xendit Sandbox →') }}</span>
                                 </button>
                                 <p class="muted small-copy mt-2 text-center" style="font-size: 11.5px; text-align: center;">
                                     {{ __('You will be redirected to official Xendit checkout for secure test payments.') }}
@@ -107,13 +107,30 @@
         </div>
         @if($order->status === 'paid')
         <div class="tickets-heading-group">
-            <h2>{{ __('Your tickets') }}</h2>
-            <p class="muted">{{ __('Save this ticket number. Demo environment tickets are not valid for real events.') }}</p>
-            @if($order->payment_method)
-                <p class="small-copy mt-1" style="color: #059669; font-size: 12.5px; font-weight: 500;">
-                    ✓ {{ __('Paid via :method', ['method' => strtoupper($order->payment_method) . ($order->payment_channel ? ' ('.$order->payment_channel.')' : '')]) }}
-                </p>
-            @endif
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 8px;">
+                <div>
+                    <h2>{{ __('Your tickets') }}</h2>
+                    <p class="muted">{{ __('Save this ticket number. Demo environment tickets are not valid for real events.') }}</p>
+                    @if($order->payment_method)
+                        <p class="small-copy mt-1" style="color: #059669; font-size: 12.5px; font-weight: 500;">
+                            ✓ {{ __('Paid via :method', ['method' => strtoupper($order->payment_method) . ($order->payment_channel ? ' ('.$order->payment_channel.')' : '')]) }}
+                        </p>
+                    @endif
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <a href="{{ route('orders.ticket.pdf', $order) }}" class="button" style="background: #0284c7; border-color: #0284c7; color: #ffffff; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>{{ __('Download E-Ticket (PDF)') }}</span>
+                    </a>
+                    <form action="{{ route('orders.resend.email', $order) }}" method="post" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="button secondary" style="display: inline-flex; align-items: center; gap: 6px;" title="{{ __('Send copy of invoice & e-ticket to your email') }}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <span>{{ __('Send to Email') }}</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
         @foreach($order->items as $item)@foreach($item->tickets as $ticket)<article class="issued-ticket">
             <div>
