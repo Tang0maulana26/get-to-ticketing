@@ -1,16 +1,16 @@
 {{-- Forgot password request page. --}}
-<x-layout title="Lupa Kata Sandi">
+<x-layout :title="__('Password recovery')">
     <section class="auth-layout shell">
         <div class="auth-intro">
             <p class="eyebrow">PASSWORD RECOVERY</p>
-            <h1>Akses akunmu<br>tetap aman.</h1>
-            <p>Masukkan alamat email yang terdaftar untuk menerima petunjuk dan tautan pengaturan ulang kata sandi.</p>
+            <h1>{{ __('Your account access remains secure.') }}</h1>
+            <p>{{ __('Enter your registered email address to receive password reset instructions and link.') }}</p>
             <div class="auth-art">STAY<br><span>SAFE</span><br>& SOUND. ↗</div>
         </div>
 
         <div class="auth-card">
-            <h2>Lupa kata sandi?</h2>
-            <p class="muted">Ketik email akunmu untuk mengatur ulang kata sandi.</p>
+            <h2>{{ __('Forgot password?') }}</h2>
+            <p class="muted">{{ __('Type your account email to reset your password.') }}</p>
 
             @if(session('status'))
                 <div class="notice success" role="status">
@@ -32,13 +32,13 @@
 
             <form action="{{ route('password.email') }}" method="post">
                 @csrf
-                <x-field label="Alamat Email Akun" name="email" type="email" required autocomplete="email" maxlength="255" />
+                <x-field :label="__('Account Email Address')" name="email" type="email" required autocomplete="email" maxlength="255" />
 
-                <button class="button full mt-2" type="submit">Kirim Tautan Reset →</button>
+                <button class="button full mt-2" type="submit">{{ __('Send Reset Link →') }}</button>
             </form>
 
             <p class="auth-switch">
-                Sudah ingat kata sandi? <a class="text-link" href="{{ route('login') }}">Kembali ke masuk</a>
+                {{ __('Remember your password?') }} <a class="text-link" href="{{ route('login') }}">{{ __('Back to login') }}</a>
             </p>
         </div>
     </section>

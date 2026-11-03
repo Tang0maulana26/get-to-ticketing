@@ -2,10 +2,15 @@
 
 // All web routes: public catalog, guest auth, password reset, customer orders, profile, and the admin area.
 
-use App\Http\Controllers\{AuthController, CatalogController, DiscountCheckController, OrderController, PasswordResetController, ProfileController};
+use App\Http\Controllers\{AuthController, CatalogController, DiscountCheckController, LocaleController, OrderController, PasswordResetController, ProfileController, XenditPaymentController};
 use App\Http\Controllers\Admin\{BuyerResetController, DashboardController, DiscountController, EventController, TicketCategoryController, UserController};
 use App\Http\Middleware\AdminOnly;
 use Illuminate\Support\Facades\Route;
+
+Route::match(['GET', 'POST'], '/locale/{lang?}', [LocaleController::class, 'switch'])->name('locale.switch');
+
+// Xendit Webhook Callback (CSRF exempt)
+Route::post('/xendit/webhook', [XenditPaymentController::class, 'webhook'])->name('xendit.webhook');
 
 Route::get('/', [CatalogController::class, 'index'])->name('catalog');
 Route::get('/events/{event:slug}', [CatalogController::class, 'show'])->name('events.show');
@@ -35,6 +40,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->middleware('throttle:10,1')->name('orders.cancel');
     Route::post('/orders/{order}/demo-payment', [OrderController::class, 'pay'])->middleware('throttle:10,1')->name('orders.pay');
+
+    // Xendit Checkout & Status Sync
+    Route::post('/orders/{order}/xendit/checkout', [XenditPaymentController::class, 'checkout'])->middleware('throttle:10,1')->name('orders.xendit.checkout');
+    Route::get('/orders/{order}/xendit/check', [XenditPaymentController::class, 'check'])->middleware('throttle:20,1')->name('orders.xendit.check');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', AdminOnly::class])->group(function () {

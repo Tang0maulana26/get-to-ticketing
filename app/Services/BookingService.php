@@ -143,8 +143,16 @@ class BookingService
 
     public function payDemo(Order $order): void
     {
+        $this->markAsPaid($order, 'demo', 'DEMO_SIMULATION');
+    }
+
+    /**
+     * Mark an order as paid, issue tickets, and record payment information securely.
+     */
+    public function markAsPaid(Order $order, string $paymentMethod = 'demo', ?string $paymentChannel = null): void
+    {
         // The transaction returns an error message instead of throwing, so released stock is committed first.
-        $error = DB::transaction(function () use ($order) {
+        $error = DB::transaction(function () use ($order, $paymentMethod, $paymentChannel) {
             $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
             if ($locked->status === 'paid') {
                 return null;
@@ -165,7 +173,13 @@ class BookingService
                 return 'Event ini sudah tidak tersedia. Pesanan dibatalkan dan stok tiket dikembalikan.';
             }
 
-            $locked->update(['status' => 'paid', 'paid_at' => now()]);
+            $locked->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+                'payment_method' => $paymentMethod,
+                'payment_channel' => $paymentChannel,
+            ]);
+
             foreach ($locked->items as $item) {
                 for ($i = 0; $i < $item->quantity; $i++) {
                     $item->tickets()->create(['code' => (string) Str::uuid(), 'status' => 'valid']);

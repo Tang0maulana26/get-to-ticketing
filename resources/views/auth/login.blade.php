@@ -1,35 +1,35 @@
 {{-- Login page with username or email support, forgot password link and demo convenience. --}}
-<x-layout title="Masuk">
+<x-layout :title="__('Log in')">
     <section class="auth-layout shell">
         <div class="auth-intro">
             <p class="eyebrow">WELCOME BACK</p>
-            <h1>Momennya<br>tinggal selangkah.</h1>
-            <p>Masuk untuk melanjutkan pemesanan dan menemukan semua tiketmu di satu tempat.</p>
+            <h1>{{ __('One step away from the moment.') }}</h1>
+            <p>{{ __('Sign in to continue booking and find all your tickets in one place.') }}</p>
             <div class="auth-art">GOOD<br><span>TIMES</span><br>AHEAD. ↗</div>
         </div>
 
         <div class="auth-card">
-            <h2>Senang kamu kembali.</h2>
-            <p class="muted">Masuk ke akun The Get To kamu.</p>
+            <h2>{{ __('Welcome back.') }}</h2>
+            <p class="muted">{{ __('Sign in to your The Get To account.') }}</p>
 
             <form action="{{ route('login') }}" method="post" data-fetch-form data-redirect-from="redirect">
                 @csrf
-                <x-field label="Email atau Username" 
+                <x-field :label="__('Email or Username')" 
                          name="login" 
                          :value="old('login', old('email'))" 
                          required 
                          autocomplete="username" 
                          maxlength="255" 
-                         placeholder="nama@email.com atau username" />
+                         :placeholder="__('Email or Username')" />
 
                 <div class="field">
                     <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                        <span>Kata sandi</span>
-                        <a href="{{ route('password.request') }}" class="text-link" style="font-size: 12px;">Lupa kata sandi?</a>
+                        <span>{{ __('Password') }}</span>
+                        <a href="{{ route('password.request') }}" class="text-link" style="font-size: 12px;">{{ __('Forgot password?') }}</a>
                     </div>
                     <div class="password-field-wrapper">
                         <input type="password" name="password" required autocomplete="current-password" maxlength="200">
-                        <button type="button" class="password-toggle-btn" aria-label="Tampilkan kata sandi" data-toggle-password>
+                        <button type="button" class="password-toggle-btn" aria-label="{{ __('Show password') }}" data-toggle-password>
                             <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -47,19 +47,19 @@
 
                 <label class="check-field mb-4" style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
                     <input type="checkbox" name="remember" value="1" @checked(old('remember'))>
-                    <span>Ingat saya di perangkat ini</span>
+                    <span>{{ __('Remember me on this device') }}</span>
                 </label>
 
-                <button class="button full" type="submit">Masuk →</button>
+                <button class="button full" type="submit">{{ __('Sign in →') }}</button>
             </form>
 
             <p class="auth-switch mt-4">
-                Belum punya akun? <a class="text-link" href="{{ route('register') }}">Daftar sekarang</a>
+                {{ __("Don't have an account?") }} <a class="text-link" href="{{ route('register') }}">{{ __('Sign up now') }}</a>
             </p>
 
             <div class="privacy-badge mt-4 pt-3" style="border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px;">
                 <span>🔒</span>
-                <span>The Get To menjaga privasi Anda: Tanpa pelacak pihak ketiga dan data disimpan secara aman.</span>
+                <span>{{ __('The Get To respects your privacy: No third-party trackers and data is securely stored.') }}</span>
             </div>
         </div>
     </section>

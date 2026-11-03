@@ -16,6 +16,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_LOCALE" value="id"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
@@ -29,5 +30,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="XENDIT_SECRET_KEY" value="xnd_development_RJxAkYfUsjGGSlkghIyHjOyu3SHsENSyxTZHe6aPx5VFo6h4o6dKQI1vkTpz4AU"/>
+        <env name="XENDIT_PUBLIC_KEY" value="xnd_public_development_Bg7SurnjR0OrnJKxrcNguajljUlPa0kFfktdz3gDXK9vWaFmiNC_2Ldxil9krJw"/>
+        <env name="XENDIT_API_URL" value="https://api.xendit.co"/>
     </php>
 </phpunit>

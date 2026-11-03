@@ -1,52 +1,52 @@
 {{-- Admin buyer data reset page with security guards and double-confirmation. --}}
-<x-layout title="Reset Data Pembeli" :admin="true">
+<x-layout :title="__('Reset Buyer Data')" :admin="true">
     <section class="shell page-space">
-        <a class="back-link" href="{{ route('admin.dashboard') }}">← Ringkasan Admin</a>
+        <a class="back-link" href="{{ route('admin.dashboard') }}">{{ __('← Admin Overview') }}</a>
 
         <div class="section-heading">
             <div>
                 <p class="eyebrow">DATA MAINTENANCE & SAFETY</p>
-                <h1>Reset Data Pembeli.</h1>
-                <p class="muted">Bersihkan data transaksi uji coba/demo secara aman tanpa merusak master event atau akun pengelola.</p>
+                <h1>{{ __('Reset Buyer Data.') }}</h1>
+                <p class="muted">{{ __('Clean test/demo transactions safely without affecting master events or admin accounts.') }}</p>
             </div>
         </div>
 
         <div class="stat-grid mb-8">
             <div class="stat-card">
-                <p>Total Pesanan</p>
+                <p>{{ __('Total Orders') }}</p>
                 <strong>{{ $orderCount }}</strong>
-                <small class="muted">{{ $paidCount }} lunas · {{ $pendingCount }} pending</small>
+                <small class="muted">{{ __(':paid paid · :pending pending', ['paid' => $paidCount, 'pending' => $pendingCount]) }}</small>
             </div>
             <div class="stat-card">
-                <p>Tiket Terbit</p>
+                <p>{{ __('Issued Tickets') }}</p>
                 <strong>{{ $ticketCount }}</strong>
             </div>
             <div class="stat-card">
-                <p>Nilai Transaksi Demo</p>
+                <p>{{ __('Demo Transaction Value') }}</p>
                 <strong>Rp{{ number_format($revenue, 0, ',', '.') }}</strong>
             </div>
             <div class="stat-card">
-                <p>Pelanggan Bertransaksi</p>
+                <p>{{ __('Transacting Customers') }}</p>
                 <strong>{{ $buyerCount }}</strong>
             </div>
         </div>
 
         <div class="panel" style="border: 2px solid #ef4444; background: #fffdfd;">
             <div class="mb-6">
-                <h2 style="color: #b91c1c;">⚠️ Pengaman Penghapusan Data (Safety Guards)</h2>
+                <h2 style="color: #b91c1c;">{{ __('⚠️ Data Deletion Safety Guards') }}</h2>
                 <p class="muted mt-2">
-                    Fitur ini dirancang khusus untuk membersihkan data transaksi dummy/portofolio agar sistem dapat diuji ulang dari keadaan bersih.
+                    {{ __('This feature is designed specifically to clean dummy/portfolio transactions so the system can be re-tested from a fresh state.') }}
                 </p>
             </div>
 
             <div class="grid md:grid-cols-2 gap-4 mb-6">
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 4px;">
-                    <strong style="color: #166534;">✓ Data Yang Tetap AMAN (Tidak Dihapus):</strong>
+                    <strong style="color: #166534;">{{ __('✓ Data That Remains SAFE (Not Deleted):') }}</strong>
                     <ul class="muted mt-2" style="padding-left: 1.25rem; font-size: 0.9rem;">
-                        <li>Semua event konser dan pertunjukan</li>
-                        <li>Semua gambar banner dan galeri poster</li>
-                        <li>Kategori tiket (Regular, VIP, dll) dan harga</li>
-                        <li>Akun Administrator dan akun pengguna terdaftar</li>
+                        <li>{{ __('All concert events and performances') }}</li>
+                        <li>{{ __('All banner images and gallery posters') }}</li>
+                        <li>{{ __('Ticket categories (Regular, VIP, etc) and prices') }}</li>
+                        <li>{{ __('Administrator accounts and registered user accounts') }}</li>
                     </ul>
                 </div>
 

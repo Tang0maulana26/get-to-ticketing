@@ -1,12 +1,12 @@
 {{-- Master layout: head/assets, navigation, flash messages and footer for both visitor and admin pages. --}}
 @props(['title' => '', 'admin' => false])
 <!DOCTYPE html>
-<html lang="id" @if($admin) data-admin="true" @endif>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if($admin) data-admin="true" @endif>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="The Get To — temukan event, pilih tiket, dan buat momen yang ingin kamu ulang.">
+    <meta name="description" content="{{ __('The Get To — find events, pick tickets, and make moments you want to repeat.') }}">
     <title>{{ $title }} · The Get To</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="alternate-icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -18,27 +18,39 @@
 </head>
 
 <body>
-    <a href="#main" class="skip-link">Langsung ke konten</a>
+    <a href="#main" class="skip-link">{{ __('Skip to content') }}</a>
 
     <header class="site-header @if(request()->routeIs('catalog')) header-home @endif">
         <nav class="shell nav-bar" aria-label="Navigasi utama">
-            <a class="brand" href="{{ route('catalog') }}" aria-label="The Get To beranda">
+            <a class="brand" href="{{ route('catalog') }}" aria-label="{{ __('The Get To home') }}">
                 <span class="brand-mark">g<span>↗</span></span>
                 <span>the get to <span class="brand-dot">•</span></span>
             </a>
 
             <div class="nav-links">
                 <a class="{{ request()->routeIs('catalog', 'events.show') ? 'selected' : '' }}" href="{{ route('catalog') }}">
-                    Jelajahi konser
+                    {{ __('Explore concerts') }}
                 </a>
                 <a class="{{ request()->routeIs('orders.*') ? 'selected' : '' }}" href="{{ route('orders.index') }}">
-                    Tiket saya
+                    {{ __('My tickets') }}
                 </a>
             </div>
 
             <div class="nav-actions">
+                <div class="locale-switcher locale-toggle" title="{{ __('Switch language') }}">
+                    <a href="/locale/en?redirect={{ urlencode(request()->fullUrl()) }}"
+                       class="locale-opt locale-text {{ app()->getLocale() === 'en' ? 'active' : '' }}"
+                       title="Switch to English"
+                       aria-label="Switch to English">EN</a>
+                    <span class="locale-sep">/</span>
+                    <a href="/locale/id?redirect={{ urlencode(request()->fullUrl()) }}"
+                       class="locale-opt locale-text {{ app()->getLocale() === 'id' ? 'active' : '' }}"
+                       title="Ganti ke Bahasa Indonesia"
+                       aria-label="Ganti ke Bahasa Indonesia">ID</a>
+                </div>
+
                 @unless($admin)
-                <button class="icon-button" type="button" data-theme-toggle aria-label="Ganti mode tema" title="Ganti mode tema">
+                <button class="icon-button" type="button" data-theme-toggle aria-label="{{ __('Toggle theme mode') }}" title="{{ __('Toggle theme mode') }}">
                     <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -58,18 +70,18 @@
 
                 @auth
                 <a class="nav-login {{ request()->routeIs('profile.*') ? 'selected' : '' }}" href="{{ route('profile.edit') }}">
-                    Profil
+                    {{ __('Profile') }}
                 </a>
                 @if(auth()->user()->isAdmin())
-                <a class="button small secondary" href="{{ route('admin.dashboard') }}">Admin</a>
+                <a class="button small secondary" href="{{ route('admin.dashboard') }}">{{ __('Admin') }}</a>
                 @endif
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="nav-logout" type="submit">Keluar</button>
+                    <button class="nav-logout" type="submit">{{ __('Sign out') }}</button>
                 </form>
                 @else
-                <a class="nav-login" href="{{ route('login') }}">Masuk</a>
-                <a class="button small" href="{{ route('register') }}">Buat akun ↗</a>
+                <a class="nav-login" href="{{ route('login') }}">{{ __('Log in') }}</a>
+                <a class="button small" href="{{ route('register') }}">{{ __('Create account ↗') }}</a>
                 @endauth
             </div>
         </nav>
@@ -80,19 +92,19 @@
         <nav class="shell" aria-label="Menu admin">
             <span class="eyebrow">WORKSPACE</span>
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'selected' : '' }}">
-                Ringkasan
+                {{ __('Overview') }}
             </a>
             <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'selected' : '' }}">
-                Event & tiket
+                {{ __('Events & tickets') }}
             </a>
             <a href="{{ route('admin.discounts.index') }}" class="{{ request()->routeIs('admin.discounts.*') ? 'selected' : '' }}">
-                Kode diskon
+                {{ __('Discount codes') }}
             </a>
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*', 'admin.customers') ? 'selected' : '' }}">
-                Pengguna & peran
+                {{ __('Users & roles') }}
             </a>
             <a href="{{ route('admin.reset.index') }}" class="{{ request()->routeIs('admin.reset.*') ? 'selected' : '' }}" style="color: #b91c1c;">
-                Reset data
+                {{ __('Reset data') }}
             </a>
         </nav>
     </div>
@@ -108,7 +120,7 @@
         @if($errors->any())
         <div class="shell">
             <div class="notice error" role="alert">
-                <strong>Periksa kembali isianmu.</strong>
+                <strong>{{ __('Please review your inputs.') }}</strong>
                 <ul>
                     @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -125,8 +137,8 @@
         <a class="brand" href="{{ route('catalog') }}">
             <span>the get to <span class="brand-dot">•</span></span>
         </a>
-        <p>Good event. Real moments •</p>
-        <span>© {{ date('Y') }} The Get To · Portfolio demo</span>
+        <p>{{ __('Good event. Real moments •') }}</p>
+        <span>© {{ date('Y') }} The Get To · {{ __('Portfolio demo') }}</span>
     </footer>
 </body>
 

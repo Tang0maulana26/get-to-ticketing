@@ -1,7 +1,7 @@
 {{-- Event detail page with gallery, description and the ticket selection/booking form. --}}
 <x-layout :title="$event->title">
     <div class="shell page-space">
-        <a class="back-link" href="{{ route('catalog') }}#events">← Semua event</a>
+        <a class="back-link" href="{{ route('catalog') }}#events">{{ __('← All events') }}</a>
 
         <div class="detail-grid">
             <div>
@@ -19,7 +19,7 @@
                     <div>
                         <span class="fact-icon">▦</span>
                         <div>
-                            <strong>{{ $event->start_time->locale('id')->translatedFormat('l, d F Y') }}</strong>
+                            <strong>{{ $event->start_time->locale(app()->getLocale())->translatedFormat('l, d F Y') }}</strong>
                             <span>
                                 {{ $event->start_time->format('H:i') }} WIB
                                 @if($event->end_time) – {{ $event->end_time->format('H:i') }} WIB @endif
@@ -36,13 +36,13 @@
                 </div>
 
                 <section class="description-block">
-                    <h2>Tentang event</h2>
+                    <h2>{{ __('About this event') }}</h2>
                     <div class="prose-content">{{ $event->description }}</div>
                 </section>
 
                 @if($event->images->isNotEmpty())
                     <section class="description-block">
-                        <h2>Lebih dekat dengan momennya</h2>
+                        <h2>{{ __('Closer to the moment') }}</h2>
                         <div class="gallery">
                             @foreach($event->images as $image)
                                 <img src="{{ Storage::disk('public')->url($image->path) }}" alt="Galeri {{ $event->title }} {{ $loop->iteration }}" loading="lazy" width="800" height="600">
@@ -52,18 +52,18 @@
                 @endif
 
                 <section class="description-block">
-                    <h2>Sebelum kamu berangkat</h2>
-                    <p class="muted">Periksa kembali tanggal, lokasi, dan pilihan tiket. Tiket hanya berlaku untuk event dan kategori yang tercantum pada pesanan.</p>
+                    <h2>{{ __('Before you go') }}</h2>
+                    <p class="muted">{{ __('Please double-check the date, venue, and ticket category. Tickets are only valid for the specified event and category.') }}</p>
                 </section>
             </div>
 
             <aside class="booking-panel">
                 <p class="eyebrow">YOUR WAY IN</p>
-                <h2>Pilih tiketmu.</h2>
-                <p class="muted">Pilih kategori, tentukan jumlah, siap berangkat.</p>
+                <h2>{{ __('Select your tickets.') }}</h2>
+                <p class="muted">{{ __('Pick a category, choose the amount, get ready to go.') }}</p>
 
                 @if($event->start_time->isPast())
-                    <div class="notice">Event ini sudah berlangsung.</div>
+                    <div class="notice">{{ __('This event has already passed.') }}</div>
                 @else
                     <form action="{{ route('checkout', $event) }}" method="post" data-booking-form>
                         @csrf
@@ -74,7 +74,7 @@
                             <div class="ticket-option">
                                 <div class="ticket-option-heading">
                                     <h3>{{ $type->name }}</h3>
-                                    <span class="availability">{{ $type->stock > 0 ? 'Tersedia' : 'Habis' }}</span>
+                                    <span class="availability">{{ $type->stock > 0 ? __('Available') : __('Sold out') }}</span>
                                 </div>
                                 <p>{{ $type->description }}</p>
                                 <div class="ticket-option-bottom">
@@ -92,25 +92,25 @@
                                         <button type="button" data-step="1" aria-label="Tambah {{ $type->name }}">+</button>
                                     </div>
                                 </div>
-                                <small>Maks. {{ $type->max_per_order }} tiket / pesanan</small>
+                                <small>{{ __('Max. :count tickets / order', ['count' => $type->max_per_order]) }}</small>
                             </div>
                         @empty
-                            <div class="notice">Pilihan tiket segera tersedia. Kunjungi kembali nanti.</div>
+                            <div class="notice">{{ __('Ticket options will be available soon. Please check back later.') }}</div>
                         @endforelse
 
                         @if($event->ticketCategories->isNotEmpty())
                             <div class="discount-box mt-4 mb-2">
                                 <label class="field mb-1">
-                                    <span>Punya kode diskon?</span>
+                                    <span>{{ __('Have a discount code?') }}</span>
                                     <div class="discount-input-group">
                                         <input type="text" 
                                                name="discount_code" 
                                                id="discount-code-input" 
                                                value="{{ old('discount_code') }}" 
-                                               placeholder="Masukkan kode promo" 
+                                               placeholder="{{ __('Enter promo code') }}" 
                                                maxlength="50" 
                                                style="text-transform: uppercase;">
-                                        <button type="button" class="button secondary small" id="apply-discount-btn">Terapkan</button>
+                                        <button type="button" class="button secondary small" id="apply-discount-btn">{{ __('Apply') }}</button>
                                     </div>
                                     @error('discount_code')
                                         <small class="field-error">{{ $message }}</small>
@@ -121,28 +121,28 @@
 
                             <div class="booking-breakdown" id="booking-breakdown" style="display: none; border-top: 1px dashed var(--line); padding-top: 0.75rem; margin-top: 0.75rem;">
                                 <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 0.35rem;">
-                                    <span class="muted">Subtotal tiket:</span>
+                                    <span class="muted">{{ __('Ticket subtotal:') }}</span>
                                     <strong id="breakdown-subtotal">Rp0</strong>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; font-size: 13px; color: #059669; margin-bottom: 0.35rem;" id="breakdown-discount-row">
-                                    <span id="breakdown-discount-label">Potongan diskon:</span>
+                                    <span id="breakdown-discount-label">{{ __('Discount deduction:') }}</span>
                                     <strong id="breakdown-discount-amount">-Rp0</strong>
                                 </div>
                             </div>
 
                             <div class="booking-total">
-                                <span>Total Pembayaran <small data-ticket-count>0 tiket</small></span>
+                                <span>{{ __('Total Payment') }} <small data-ticket-count>{{ __(':count tickets', ['count' => 0]) }}</small></span>
                                 <strong data-ticket-total>Rp0</strong>
                             </div>
                             <div class="booking-quota-alert" data-quota-alert role="alert"></div>
-                            <p class="muted small-copy">Total final dihitung kembali saat membuat pesanan.</p>
+                            <p class="muted small-copy">{{ __('Final total will be recalculated during order creation.') }}</p>
 
                             @auth
-                                <button class="button full" type="submit" data-booking-submit>Lanjut ke checkout <span>→</span></button>
+                                <button class="button full" type="submit" data-booking-submit>{{ __('Proceed to checkout →') }}</button>
                             @else
-                                <a class="button full" href="{{ route('login') }}">Masuk untuk pesan <span>→</span></a>
+                                <a class="button full" href="{{ route('login') }}">{{ __('Sign in to book →') }}</a>
                             @endauth
-                            <p class="booking-note">Tiket disimpan selama 15 menit setelah checkout.</p>
+                            <p class="booking-note">{{ __('Tickets are held for 15 minutes after checkout.') }}</p>
                         @endif
                     </form>
                 @endif

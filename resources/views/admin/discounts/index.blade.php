@@ -1,28 +1,28 @@
 {{-- Admin discount management list. --}}
-<x-layout title="Kelola Diskon" :admin="true">
+<x-layout :title="__('Manage discounts')" :admin="true">
     <section class="shell page-space">
         <div class="section-heading">
             <div>
                 <p class="eyebrow">PROMO & DISCOUNTS</p>
-                <h1>Kode Diskon.</h1>
-                <p class="muted">Atur kode promo, persentase potongan, kuota, dan masa berlaku.</p>
+                <h1>{{ __('Discount Codes.') }}</h1>
+                <p class="muted">{{ __('Manage promo codes, discount percentages, quotas, and validity.') }}</p>
             </div>
-            <a class="button" href="{{ route('admin.discounts.create') }}">+ Buat Diskon</a>
+            <a class="button" href="{{ route('admin.discounts.create') }}">{{ __('+ Create Discount') }}</a>
         </div>
 
         <form class="filter-bar" method="get">
             <label class="search-field">
                 <span>⌕</span>
-                <input name="q" value="{{ request('q') }}" placeholder="Cari kode atau nama promo..." aria-label="Cari diskon" maxlength="100">
+                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search promo code or name...') }}" aria-label="Cari diskon" maxlength="100">
             </label>
             <select name="status" aria-label="Status diskon">
-                <option value="">Semua status</option>
-                <option value="active" @selected(request('status') === 'active')>Aktif</option>
-                <option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option>
+                <option value="">{{ __('All statuses') }}</option>
+                <option value="active" @selected(request('status') === 'active')>{{ __('Active') }}</option>
+                <option value="inactive" @selected(request('status') === 'inactive')>{{ __('Inactive') }}</option>
             </select>
-            <button class="button secondary" type="submit">Filter</button>
+            <button class="button secondary" type="submit">{{ __('Filter') }}</button>
             @if(request()->hasAny(['q', 'status']))
-                <a class="text-link" href="{{ route('admin.discounts.index') }}">Reset</a>
+                <a class="text-link" href="{{ route('admin.discounts.index') }}">{{ __('Reset') }}</a>
             @endif
         </form>
 
@@ -30,13 +30,13 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Kode</th>
-                        <th>Nama Promo</th>
-                        <th>Nilai Potongan</th>
-                        <th>Min. Pembelian</th>
-                        <th>Kuota / Terpakai</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Promo Name') }}</th>
+                        <th>{{ __('Discount Amount') }}</th>
+                        <th>{{ __('Min. Purchase') }}</th>
+                        <th>{{ __('Quota / Used') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

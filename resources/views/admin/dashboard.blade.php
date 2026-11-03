@@ -1,41 +1,41 @@
 {{-- Admin overview with totals, actions and recent orders. --}}
-<x-layout title="Ringkasan admin" :admin="true">
+<x-layout :title="__('Admin overview')" :admin="true">
     <section class="shell page-space">
         <div class="section-heading">
             <div>
                 <p class="eyebrow">ADMIN OVERVIEW</p>
-                <h1>Ringkasan Pengelola.</h1>
-                <p class="muted">Aktivitas penjualan, event aktif, dan ringkasan transaksi terbaru.</p>
+                <h1>{{ __('Admin Overview.') }}</h1>
+                <p class="muted">{{ __('Sales activity, active events, and recent transactions summary.') }}</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <a class="button secondary" href="{{ route('admin.discounts.create') }}">+ Kode diskon</a>
-                <a class="button" href="{{ route('admin.events.create') }}">+ Buat event</a>
+                <a class="button secondary" href="{{ route('admin.discounts.create') }}">{{ __('+ Discount code') }}</a>
+                <a class="button" href="{{ route('admin.events.create') }}">{{ __('+ Create event') }}</a>
             </div>
         </div>
 
         <div class="stat-grid">
             <div class="stat-card">
-                <p>Total event</p>
+                <p>{{ __('Total events') }}</p>
                 <strong>{{ $eventCount }}</strong>
             </div>
             <div class="stat-card">
-                <p>Total pesanan</p>
+                <p>{{ __('Total orders') }}</p>
                 <strong>{{ $orderCount }}</strong>
             </div>
             <div class="stat-card">
-                <p>Nilai pesanan lunas</p>
+                <p>{{ __('Paid order revenue') }}</p>
                 <strong>Rp{{ number_format($revenue, 0, ',', '.') }}</strong>
             </div>
             <div class="stat-card">
-                <p>Pelanggan</p>
+                <p>{{ __('Customers') }}</p>
                 <strong>{{ $customerCount }}</strong>
             </div>
         </div>
 
         <div class="flex items-center justify-between mb-5 mt-8">
-            <h2>Pesanan terbaru</h2>
+            <h2>{{ __('Recent orders') }}</h2>
             <a class="text-link" href="{{ route('admin.reset.index') }}" style="color: #b91c1c; font-size: 0.9rem;">
-                ⚠️ Kelola & Reset Data Pembeli →
+                {{ __('⚠️ Manage & Reset Buyer Data →') }}
             </a>
         </div>
 
@@ -43,11 +43,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Pelanggan</th>
-                        <th>Event</th>
-                        <th>Total Pembayaran</th>
-                        <th>Status</th>
-                        <th>Dibuat</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th>{{ __('Event') }}</th>
+                        <th>{{ __('Total Payment') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Created') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,7 +62,7 @@
                                 <strong>Rp{{ number_format($order->total, 0, ',', '.') }}</strong>
                                 @if($order->discount_amount > 0)
                                     <small style="color: #059669; display: block;">
-                                        Diskon: -Rp{{ number_format($order->discount_amount, 0, ',', '.') }} ({{ $order->discount_code }})
+                                        {{ __('Discount:') }} -Rp{{ number_format($order->discount_amount, 0, ',', '.') }} ({{ $order->discount_code }})
                                     </small>
                                 @endif
                             </td>
@@ -71,7 +71,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">Belum ada pesanan. Pesanan pelanggan akan tampil di sini.</td>
+                            <td colspan="5">{{ __('No orders yet.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

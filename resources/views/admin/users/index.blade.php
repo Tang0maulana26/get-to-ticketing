@@ -1,29 +1,29 @@
 {{-- Admin user management and role overview with CSV export and delete actions. --}}
-<x-layout title="Manajemen Pengguna" :admin="true">
+<x-layout :title="__('Users & roles')" :admin="true">
     <section class="shell page-space">
         <div class="section-heading">
             <div>
                 <p class="eyebrow">USER & ROLE MANAGEMENT</p>
-                <h1>Pengguna & Peran.</h1>
-                <p class="muted">Kelola akun terdaftar, ubah status peran admin atau pelanggan, dan perbarui data pengguna.</p>
+                <h1>{!! __('Users & Roles.') !!}</h1>
+                <p class="muted">{{ __('Manage registered accounts, switch admin/customer roles, and update user records.') }}</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <a class="button secondary" href="{{ route('admin.customers.export') }}">
-                    Export CSV ⤓
+                    {{ __('Export CSV ⤓') }}
                 </a>
                 <a class="button secondary" href="{{ route('admin.reset.index') }}" style="color: #b91c1c;">
-                    ⚠️ Reset Data Pembeli
+                    ⚠️ {{ __('Reset Buyer Data') }}
                 </a>
             </div>
         </div>
 
         <div class="stat-grid mb-8">
             <div class="stat-card">
-                <p>Total Admin</p>
+                <p>{{ __('Total Admins') }}</p>
                 <strong>{{ $totalAdmins }}</strong>
             </div>
             <div class="stat-card">
-                <p>Total Pelanggan</p>
+                <p>{{ __('Total Customers') }}</p>
                 <strong>{{ $totalCustomers }}</strong>
             </div>
         </div>
@@ -31,16 +31,16 @@
         <form class="filter-bar" method="get">
             <label class="search-field">
                 <span>⌕</span>
-                <input name="q" value="{{ request('q') }}" placeholder="Cari nama, username, atau email..." aria-label="Cari pengguna" maxlength="100">
+                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search name, username, or email...') }}" aria-label="Cari pengguna" maxlength="100">
             </label>
             <select name="role" aria-label="Filter peran">
-                <option value="">Semua peran</option>
-                <option value="admin" @selected(request('role') === 'admin')>Admin</option>
-                <option value="customer" @selected(request('role') === 'customer')>Pelanggan (Customer)</option>
+                <option value="">{{ __('All roles') }}</option>
+                <option value="admin" @selected(request('role') === 'admin')>{{ __('Admin') }}</option>
+                <option value="customer" @selected(request('role') === 'customer')>{{ __('Customer (Pelanggan)') }}</option>
             </select>
-            <button class="button secondary" type="submit">Filter</button>
+            <button class="button secondary" type="submit">{{ __('Filter') }}</button>
             @if(request()->hasAny(['q', 'role']))
-                <a class="text-link" href="{{ route('admin.users.index') }}">Reset</a>
+                <a class="text-link" href="{{ route('admin.users.index') }}">{{ __('Reset') }}</a>
             @endif
         </form>
 

@@ -1,37 +1,37 @@
 {{-- Registration page with username, confirmed password, and privacy assurance. --}}
-<x-layout title="Buat akun">
+<x-layout :title="__('Create account')">
     <section class="auth-layout shell">
         <div class="auth-intro">
             <p class="eyebrow">BE PART OF THE MOMENT</p>
-            <h1>Cerita baru.<br>Mulai dari kamu.</h1>
-            <p>Buat akun untuk menyimpan tiket dan bersiap untuk konser berikutnya.</p>
+            <h1>{{ __('A new story. Starts with you.') }}</h1>
+            <p>{{ __('Create an account to keep your tickets and get ready for the next concert.') }}</p>
             <div class="auth-art">SEE YOU<br><span>IN THE</span><br>CROWD. ↗</div>
         </div>
 
         <div class="auth-card">
-            <h2>Buat akunmu.</h2>
-            <p class="muted">Mulai perjalanan menuju panggung favorit.</p>
+            <h2>{{ __('Create your account.') }}</h2>
+            <p class="muted">{{ __('Start your journey to your favorite stage.') }}</p>
 
             <form action="{{ route('register') }}" method="post">
                 @csrf
-                <x-field label="Nama lengkap" name="name" required autocomplete="name" maxlength="100" placeholder="Nama lengkap Anda" />
+                <x-field :label="__('Full name')" name="name" required autocomplete="name" maxlength="100" :placeholder="__('Full name')" />
 
-                <x-field label="Username (panggilan unik)" 
+                <x-field :label="__('Username (unique handle for login)')" 
                          name="username" 
                          required 
                          autocomplete="username" 
                          maxlength="50" 
-                         placeholder="contoh: budi_konser" 
+                         placeholder="budi_konser" 
                          pattern="[a-zA-Z0-9_\-]+" 
-                         title="Hanya huruf, angka, garis bawah (_), dan tanda hubung (-)" />
+                         title="Letters, numbers, underscores, and dashes only" />
 
                 <x-field label="Email" name="email" type="email" required autocomplete="email" maxlength="255" placeholder="nama@email.com" />
 
                 <div class="field">
-                    <span>Kata sandi</span>
+                    <span>{{ __('Password') }}</span>
                     <div class="password-field-wrapper">
                         <input type="password" name="password" required minlength="10" maxlength="200" autocomplete="new-password">
-                        <button type="button" class="password-toggle-btn" aria-label="Tampilkan kata sandi" data-toggle-password>
+                        <button type="button" class="password-toggle-btn" aria-label="{{ __('Show password') }}" data-toggle-password>
                             <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -42,17 +42,17 @@
                             </svg>
                         </button>
                     </div>
-                    <small>Minimal 10 karakter, mengandung kombinasi huruf dan angka.</small>
+                    <small>{{ __('At least 10 characters, containing letters and numbers.') }}</small>
                     @error('password')
                         <small class="field-error">{{ $message }}</small>
                     @enderror
                 </div>
 
                 <div class="field">
-                    <span>Ulangi kata sandi</span>
+                    <span>{{ __('Confirm password') }}</span>
                     <div class="password-field-wrapper">
                         <input type="password" name="password_confirmation" required autocomplete="new-password">
-                        <button type="button" class="password-toggle-btn" aria-label="Tampilkan kata sandi" data-toggle-password>
+                        <button type="button" class="password-toggle-btn" aria-label="{{ __('Show password') }}" data-toggle-password>
                             <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -65,11 +65,11 @@
                     </div>
                 </div>
 
-                <button class="button full mt-2" type="submit">Buat akun →</button>
+                <button class="button full mt-2" type="submit">{{ __('Create account →') }}</button>
             </form>
 
             <p class="auth-switch mt-4">
-                Sudah punya akun? <a class="text-link" href="{{ route('login') }}">Masuk</a>
+                {{ __('Already have an account?') }} <a class="text-link" href="{{ route('login') }}">{{ __('Log in') }}</a>
             </p>
 
             <div class="privacy-badge mt-4 pt-3" style="border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); display: flex; align-items: flex-start; gap: 8px;">

@@ -21,26 +21,33 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         if (!app()->environment('local', 'testing')) { throw new \RuntimeException('Demo seeding is only allowed locally.'); }
-        $credentials = [];
+        $demoFile = 'demo-accounts.json';
+        $storedCredentials = [];
+        if (Storage::disk('local')->exists($demoFile)) {
+            $storedCredentials = json_decode(Storage::disk('local')->get($demoFile), true) ?: [];
+        }
+
+        $defaultPasswords = [
+            'admin' => 'Admin1234557!',
+            'customer' => 'Customer1234567!',
+        ];
+
         foreach (['admin' => ['Admin The Get To', 'admin'], 'customer' => ['Teman Konser', 'customer']] as $role => [$name, $username]) {
             $email = $role.'@thegetto.test';
+            $password = $storedCredentials[$role]['password'] ?? $defaultPasswords[$role];
             $user = User::where('email', $email)->first();
             if (! $user) {
-                $password = Str::password(18);
                 $user = new User(['name' => $name, 'username' => $username, 'email' => $email, 'password' => Hash::make($password)]);
                 $user->role = $role;
                 $user->save();
-                $credentials[$role] = ['name' => $name, 'username' => $username, 'email' => $email, 'password' => $password];
             } else {
-                if (empty($user->username)) {
-                    $user->username = $username;
-                    $user->save();
-                }
+                $user->username = $username;
+                $user->password = Hash::make($password);
+                $user->save();
             }
+            $storedCredentials[$role] = ['username' => $username, 'email' => $email, 'password' => $password];
         }
-        if ($credentials) {
-            Storage::disk('local')->put('demo-accounts.json', json_encode($credentials, JSON_PRETTY_PRINT));
-        }
+        Storage::disk('local')->put($demoFile, json_encode($storedCredentials, JSON_PRETTY_PRINT));
         $category = Category::firstOrCreate(['slug' => 'music'], ['name' => 'Musik']);
         $events = [
             ['Blue Hour Festival', 'blue-hour-festival', 'Jakarta', 'Senayan Park', 'Jl. Gerbang Pemuda No. 3', 21, 275000, 'poster-blue.svg', 'Satu langit, banyak suara. Rayakan musik independen di antara senja dan cahaya kota.'],

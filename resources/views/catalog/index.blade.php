@@ -9,14 +9,14 @@
                 </h1>
 
                 <p class="vintage-lead">
-                    Discover and book tickets for upcoming events, concerts, and live experiences.
+                    {{ __('Discover and book tickets for upcoming events, concerts, and live experiences') }}
                 </p>
 
                 <div class="vintage-actions">
                     <a class="vintage-btn"
                         href="#events"
                         onclick="event.preventDefault(); document.getElementById('events').scrollIntoView({ behavior: 'smooth' });">
-                        Explore Events <span>&rarr;</span>
+                        {{ __('Explore Events') }} <span>&rarr;</span>
                     </a>
                 </div>
             </div>
@@ -26,7 +26,7 @@
     <!-- Curated Benefits Strip -->
     <div class="benefits-strip">
         <div class="shell" style="justify-content: center;">
-            <span>✦ &nbsp; Curated event selection</span>
+            <span>✦ &nbsp; {{ __('Curated event selection') }}</span>
             <!-- <span>↗ &nbsp; Direct and verified tickets</span> -->
             <!-- <span>◎ &nbsp; All passes secured in your account</span> -->
         </div>
@@ -36,10 +36,10 @@
     <section class="shell catalog-section" id="events">
         <div class="section-heading">
             <div>
-                <h2>Available events</h2>
-                <p class="muted">Discover the events of your choice and secure your spot</p>
+                <h2>{{ __('Available events') }}</h2>
+                <p class="muted">{{ __('Discover the events of your choice and secure your spot') }}</p>
             </div>
-            <span class="count-label" data-catalog-count>{{ $events->total() }} events available</span>
+            <span class="count-label" data-catalog-count>{{ __(':count events available', ['count' => $events->total()]) }}</span>
         </div>
 
         <!-- Filter & Search Bar -->
@@ -49,13 +49,13 @@
                 <input type="search"
                     name="q"
                     value="{{ request('q') }}"
-                    placeholder="Search events, artists, venues..."
-                    aria-label="Search events or venue"
+                    placeholder="{{ __('Search events, artists, venues...') }}"
+                    aria-label="{{ __('Search events, artists, venues...') }}"
                     maxlength="100">
             </label>
 
             <select name="city" aria-label="Select city">
-                <option value="">All cities</option>
+                <option value="">{{ __('All cities') }}</option>
                 @foreach($cities as $city)
                 <option value="{{ $city }}" @selected(request('city')===$city)>{{ $city }}</option>
                 @endforeach
@@ -63,7 +63,7 @@
 
             @if($categories->count() > 1)
             <select name="category" aria-label="Event category">
-                <option value="">All categories</option>
+                <option value="">{{ __('All categories') }}</option>
                 @foreach($categories as $category)
                 <option value="{{ $category->slug }}" @selected(request('category')===$category->slug)>
                     {{ $category->name }}
@@ -72,10 +72,10 @@
             </select>
             @endif
 
-            <button class="button" type="submit">Filter events</button>
+            <button class="button" type="submit">{{ __('Filter events') }}</button>
 
             @if(request()->hasAny(['q', 'city', 'category']))
-            <a class="text-link" href="{{ route('catalog') }}#events">Reset</a>
+            <a class="text-link" href="{{ route('catalog') }}#events">{{ __('Reset') }}</a>
             @endif
         </form>
 
@@ -87,9 +87,9 @@
         <div class="bottom-banner">
             <div>
                 <p class="eyebrow">LESS SCROLLING. MORE LIVING.</p>
-                <h2>The best memories are made at the event</h2>
+                <h2>{{ __('The best memories are made at the event') }}</h2>
             </div>
-            <a href="#events" class="button secondary">Find your events ↗</a>
+            <a href="#events" class="button secondary">{{ __('Find your events ↗') }}</a>
         </div>
     </section>
 </x-layout>

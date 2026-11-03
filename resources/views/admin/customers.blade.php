@@ -1,15 +1,15 @@
 {{-- Admin customer list with order counts, total spent, CSV export and deletion action. --}}
-<x-layout title="Pelanggan" :admin="true">
+<x-layout :title="__('Customers')" :admin="true">
     <section class="shell page-space">
         <div class="section-heading">
             <div>
                 <p class="eyebrow">CUSTOMER OVERVIEW</p>
-                <h1>Pelanggan.</h1>
-                <p class="muted">Ringkasan pelanggan dan aktivitas pembeliannya.</p>
+                <h1>{{ __('Customers.') }}</h1>
+                <p class="muted">{{ __('Customer summary and purchasing activity.') }}</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <a class="button secondary" href="{{ route('admin.customers.export') }}">
-                    Export CSV ⤓
+                    {{ __('Export CSV ⤓') }}
                 </a>
             </div>
         </div>
@@ -18,12 +18,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Pelanggan</th>
-                        <th>Email</th>
-                        <th>Jumlah pesanan</th>
-                        <th>Total pembelian lunas</th>
-                        <th>Bergabung</th>
-                        <th>Aksi</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th>{{ __('Email') }}</th>
+                        <th>{{ __('Order count') }}</th>
+                        <th>{{ __('Paid spending') }}</th>
+                        <th>{{ __('Joined') }}</th>
+                        <th>{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,11 +39,11 @@
                             <td>{{ $customer->created_at->format('d M Y') }}</td>
                             <td>
                                 <div class="table-actions">
-                                    <a class="text-link" href="{{ route('admin.users.edit', $customer) }}">Edit</a>
-                                    <form action="{{ route('admin.users.destroy', $customer) }}" method="post" data-confirm="Hapus akun pelanggan {{ $customer->name }}? Riwayat pesanan dan tiket terkait akan dibersihkan.">
+                                    <a class="text-link" href="{{ route('admin.users.edit', $customer) }}">{{ __('Edit') }}</a>
+                                    <form action="{{ route('admin.users.destroy', $customer) }}" method="post" data-confirm="{{ __('Delete customer account :name? Associated orders and tickets will be cleared.', ['name' => $customer->name]) }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" style="color: #b91c1c;">Hapus</button>
+                                        <button type="submit" style="color: #b91c1c;">{{ __('Delete') }}</button>
                                     </form>
                                 </div>
                             </td>
