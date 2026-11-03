@@ -1,3 +1,4 @@
+{{-- Reusable event card used in the catalog grid. --}}
 @props(['event'])
 <article class="event-card">
     <a href="{{ route('events.show', $event->slug) }}" class="poster-link" tabindex="-1" aria-hidden="true"><img src="{{ $event->banner_url }}" alt="" loading="lazy" width="800" height="600"><span class="poster-label">{{ $event->category->name }}</span><span class="poster-arrow">↗</span></a>

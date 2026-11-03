@@ -1,3 +1,4 @@
+{{-- Landing page: hero, featured event, filters and the event grid. --}}
 <x-layout>
     <!-- Hero Section: Clean Vintage Modern -->
     <section class="vintage-hero" style="--hero-bg: url('{{ asset('images/bg-poster-kelvin-moquete-unsplash.svg') }}');">
@@ -24,10 +25,10 @@
 
     <!-- Curated Benefits Strip -->
     <div class="benefits-strip">
-        <div class="shell">
+        <div class="shell" style="justify-content: center;">
             <span>✦ &nbsp; Curated event selection</span>
-            <span>↗ &nbsp; Direct and verified tickets</span>
-            <span>◎ &nbsp; All passes secured in your account</span>
+            <!-- <span>↗ &nbsp; Direct and verified tickets</span> -->
+            <!-- <span>◎ &nbsp; All passes secured in your account</span> -->
         </div>
     </div>
 
@@ -35,9 +36,8 @@
     <section class="shell catalog-section" id="events">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">UPCOMING DATES</p>
-                <h2>Next on stage.</h2>
-                <p class="muted">Find your sound and secure your spot in the crowd.</p>
+                <h2>Available events</h2>
+                <p class="muted">Discover the events of your choice and secure your spot</p>
             </div>
             <span class="count-label" data-catalog-count>{{ $events->total() }} events available</span>
         </div>
@@ -87,9 +87,9 @@
         <div class="bottom-banner">
             <div>
                 <p class="eyebrow">LESS SCROLLING. MORE LIVING.</p>
-                <h2>The best memories are in front of the stage.</h2>
+                <h2>The best memories are made at the event</h2>
             </div>
-            <a href="#events" class="button secondary">Find your event ↗</a>
+            <a href="#events" class="button secondary">Find your events ↗</a>
         </div>
     </section>
 </x-layout>

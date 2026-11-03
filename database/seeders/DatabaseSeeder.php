@@ -8,6 +8,9 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Seeds demo categories, events, ticket types and accounts. Demo credentials are random and stored only in a private local file.
+ */
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;

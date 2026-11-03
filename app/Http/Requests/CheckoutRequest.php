@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validates a checkout submission: idempotency key plus a map of ticket category id => quantity.
+ */
 class CheckoutRequest extends FormRequest
 {
     public function rules(): array

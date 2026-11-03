@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Validates admin ticket category input (name unique per event, integer rupiah price, capacity). Admin only.
+ */
 class TicketCategoryRequest extends FormRequest
 {
     public function authorize(): bool

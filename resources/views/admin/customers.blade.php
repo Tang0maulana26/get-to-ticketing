@@ -1,3 +1,4 @@
+{{-- Admin customer list with order counts and total spent. --}}
 <x-layout title="Pelanggan" :admin="true">
     <section class="shell page-space">
         <div class="section-heading">

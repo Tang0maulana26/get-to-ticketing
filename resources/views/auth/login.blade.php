@@ -1,3 +1,4 @@
+{{-- Login page. --}}
 <x-layout title="Masuk">
     <section class="auth-layout shell">
         <div class="auth-intro">

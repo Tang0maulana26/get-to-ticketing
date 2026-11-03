@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
+ * Builds fake users for tests.
+ *
  * @extends Factory<User>
  */
 class UserFactory extends Factory

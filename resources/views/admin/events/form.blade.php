@@ -1,3 +1,4 @@
+{{-- Admin create/edit event form with media management and its ticket category list. --}}
 <x-layout :title="$event->exists ? 'Edit event' : 'Buat event'" :admin="true">
     <section class="shell page-space"><a class="back-link" href="{{ route('admin.events.index') }}">← Event & tiket</a>
         <div class="section-heading">

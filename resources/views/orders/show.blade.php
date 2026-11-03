@@ -1,3 +1,4 @@
+{{-- Order detail: status, countdown, payment/cancel actions and issued tickets. --}}
 <x-layout title="Detail pesanan">
     <section class="shell page-space order-detail"><a class="back-link" href="{{ route('orders.index') }}">← Tiket saya</a>
         <div class="section-heading">

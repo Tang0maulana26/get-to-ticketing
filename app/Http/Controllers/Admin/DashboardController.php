@@ -7,6 +7,9 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Models\User;
 
+/**
+ * Admin overview: headline numbers, recent orders and a simple customer list.
+ */
 class DashboardController extends Controller
 {
     public function index()

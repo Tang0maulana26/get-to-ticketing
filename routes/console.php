@@ -1,5 +1,7 @@
 <?php
 
+// Console commands and schedule: releases expired ticket reservations every minute.
+
 use App\Services\BookingService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;

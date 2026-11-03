@@ -6,6 +6,10 @@ use App\Models\Category;
 use App\Models\Event;
 use Illuminate\Http\Request;
 
+/**
+ * Public catalog: lists upcoming published events (search, category and city filters) and shows event details.
+ * Returns JSON with a rendered partial when the live-filter script asks for it, otherwise a full page.
+ */
 class CatalogController extends Controller
 {
     public function index(Request $request)

@@ -9,6 +9,10 @@ use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * Customer order flow: checkout, order history/detail, cancellation and the local demo payment.
+ * Stock rules live in BookingService; this controller only authorizes and redirects.
+ */
 class OrderController extends Controller
 {
     public function __construct(private BookingService $bookings) {}

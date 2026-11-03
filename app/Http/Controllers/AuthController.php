@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Handles visitor authentication: login/register forms, credential check, account creation and logout.
+ * Validation lives in LoginRequest/RegisterRequest; login attempts are throttled by the "login" rate limiter.
+ */
 class AuthController extends Controller
 {
     public function login()

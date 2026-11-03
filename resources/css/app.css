@@ -1,3 +1,4 @@
+/* Tailwind entry point plus the hand-written component styles for visitor and admin pages (light default, optional dark mode). */
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -610,7 +611,8 @@ small {
 
 .benefits-strip > .shell {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 32px;
     padding-block: 16px;
     color: var(--muted);
     font-size: 12px;

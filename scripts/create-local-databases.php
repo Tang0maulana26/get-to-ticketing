@@ -1,4 +1,6 @@
 <?php
+
+// Helper that creates the local development and test PostgreSQL databases if missing. It never drops anything.
 // Uses local .env credentials without printing them. Never drops databases.
 require __DIR__.'/../vendor/autoload.php';
 Dotenv\Dotenv::createImmutable(dirname(__DIR__))->load();

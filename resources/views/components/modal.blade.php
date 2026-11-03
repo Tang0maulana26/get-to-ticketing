@@ -1,3 +1,4 @@
+{{-- Reusable <dialog> modal shell; opened and closed by data attributes handled in app.js. --}}
 @props(['id','title'])
 <dialog id="{{ $id }}" class="modal">
     <div class="modal-heading">

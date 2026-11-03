@@ -1,3 +1,4 @@
+{{-- Customer order history ("My tickets"). --}}
 <x-layout title="Tiket saya">
     <section class="shell page-space">
         <p class="eyebrow">YOUR NEXT EXPERIENCE</p>

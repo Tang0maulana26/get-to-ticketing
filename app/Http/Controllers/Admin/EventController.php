@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Admin CRUD for events, including banner/gallery uploads (re-encoded by EventMedia).
+ * Deleting is a soft delete so order history keeps its event reference.
+ */
 class EventController extends Controller
 {
     public function index(Request $request)

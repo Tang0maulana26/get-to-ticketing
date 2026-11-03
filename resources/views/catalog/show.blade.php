@@ -1,3 +1,4 @@
+{{-- Event detail page with gallery, description and the ticket selection/booking form. --}}
 <x-layout :title="$event->title">
     <div class="shell page-space">
         <a class="back-link" href="{{ route('catalog') }}#events">← Semua event</a>

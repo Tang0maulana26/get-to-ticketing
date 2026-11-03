@@ -1,5 +1,7 @@
 <?php
 
+// All web routes: public catalog, guest auth, customer orders and the admin area.
+
 use App\Http\Controllers\{AuthController, CatalogController, OrderController};
 use App\Http\Controllers\Admin\{DashboardController, EventController, TicketCategoryController};
 use App\Http\Middleware\AdminOnly;

@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Validates registration: normalizes the email and enforces a strong, confirmed password.
+ */
 class RegisterRequest extends FormRequest
 {
     protected function prepareForValidation(): void

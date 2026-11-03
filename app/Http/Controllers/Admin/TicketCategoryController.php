@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Admin management of ticket categories (e.g. Regular, VIP) for one event.
+ * Row locks protect stock: capacity cannot drop below sold/reserved seats, and sold categories are deactivated instead of deleted.
+ */
 class TicketCategoryController extends Controller
 {
     public function store(TicketCategoryRequest $request, Event $event)

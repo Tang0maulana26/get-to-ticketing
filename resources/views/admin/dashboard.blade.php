@@ -1,3 +1,4 @@
+{{-- Admin overview with totals and recent orders. --}}
 <x-layout title="Ringkasan admin" :admin="true">
     <section class="shell page-space">
         <div class="section-heading">

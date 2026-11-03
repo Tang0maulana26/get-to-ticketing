@@ -1,5 +1,7 @@
 <?php
 
+// Creates the ticketing schema: categories, events, images, ticket categories, orders, order items and tickets (also adds a role to users).
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

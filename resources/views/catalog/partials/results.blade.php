@@ -1,3 +1,4 @@
+{{-- Event grid and pagination; also returned as JSON HTML by the live catalog filter. --}}
 <!-- Event Cards Grid -->
 <div class="event-grid">
     @forelse($events as $event)

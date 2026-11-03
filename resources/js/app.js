@@ -1,3 +1,7 @@
+/**
+ * Frontend behaviour (no framework): theme toggle, modals, fetch-based forms, live catalog filter, confirmations, ticket stepper and header scroll effects.
+ * Everything degrades to normal form posts when JavaScript is unavailable.
+ */
 // Theme toggle handling
 document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
     const dark = document.documentElement.classList.toggle("dark");
@@ -24,7 +28,10 @@ const csrfToken = (form) =>
     document.querySelector('meta[name="csrf-token"]')?.content ??
     "";
 
-const requestJson = async (url, { method = "GET", body, form, signal } = {}) => {
+const requestJson = async (
+    url,
+    { method = "GET", body, form, signal } = {},
+) => {
     const response = await fetch(url, {
         method,
         signal,
@@ -122,9 +129,15 @@ document.addEventListener("submit", async (event) => {
             const general = showFieldErrors(form, data.errors);
             if (general.length) showNotice(general.join(" "), "error");
         } else if (status === 419) {
-            showNotice("Sesi habis. Muat ulang halaman lalu coba lagi.", "error");
+            showNotice(
+                "Sesi habis. Muat ulang halaman lalu coba lagi.",
+                "error",
+            );
         } else {
-            showNotice(data.message || "Terjadi kesalahan. Coba lagi.", "error");
+            showNotice(
+                data.message || "Terjadi kesalahan. Coba lagi.",
+                "error",
+            );
         }
     } catch (_) {
         showNotice("Koneksi bermasalah. Coba lagi.", "error");
@@ -145,7 +158,10 @@ const refreshTarget = async () => {
         credentials: "same-origin",
         headers: { "X-Requested-With": "XMLHttpRequest" },
     });
-    const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+    const doc = new DOMParser().parseFromString(
+        await response.text(),
+        "text/html",
+    );
     const fresh = doc.getElementById(current.id);
     if (fresh) current.replaceWith(fresh);
 };
@@ -164,8 +180,11 @@ if (filterForm && results) {
         results.setAttribute("aria-busy", "true");
         results.style.opacity = "0.5";
         try {
-            const { ok, data } = await requestJson(url, { signal: controller.signal });
-            if (!ok || typeof data.html !== "string") throw new Error("bad response");
+            const { ok, data } = await requestJson(url, {
+                signal: controller.signal,
+            });
+            if (!ok || typeof data.html !== "string")
+                throw new Error("bad response");
             results.innerHTML = data.html;
             if (counter) counter.textContent = `${data.total} events available`;
             if (push) history.pushState(null, "", url);
@@ -180,9 +199,14 @@ if (filterForm && results) {
 
     const currentUrl = () => {
         const params = new URLSearchParams(new FormData(filterForm));
-        [...params].forEach(([key, value]) => value === "" && params.delete(key));
+        [...params].forEach(
+            ([key, value]) => value === "" && params.delete(key),
+        );
         const query = params.toString();
-        return filterForm.getAttribute("action").split("#")[0] + (query ? `?${query}` : "");
+        return (
+            filterForm.getAttribute("action").split("#")[0] +
+            (query ? `?${query}` : "")
+        );
     };
 
     filterForm.addEventListener("submit", (event) => {
@@ -218,10 +242,11 @@ if (filterForm && results) {
 
 // Confirmation dialogs for classic (non-fetch) forms
 document.addEventListener("submit", (event) => {
-    const form = event.target.closest("form[data-confirm]:not([data-fetch-form])");
+    const form = event.target.closest(
+        "form[data-confirm]:not([data-fetch-form])",
+    );
     if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
 });
-
 
 // Booking form interactivity & ticket stepper
 const booking = document.querySelector("[data-booking-form]");

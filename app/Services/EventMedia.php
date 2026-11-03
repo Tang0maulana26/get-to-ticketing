@@ -6,6 +6,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Stores uploaded event images safely by re-encoding them as resized WebP files.
+ */
 class EventMedia
 {
     private const MAX_EDGE = 1600;

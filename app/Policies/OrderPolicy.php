@@ -5,6 +5,9 @@ namespace App\Policies;
 use App\Models\Order;
 use App\Models\User;
 
+/**
+ * Authorization for orders: only the owner may view or modify their own order.
+ */
 class OrderPolicy
 {
     public function view(User $user, Order $order): bool

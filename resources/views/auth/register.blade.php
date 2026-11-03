@@ -1,3 +1,4 @@
+{{-- Registration page. --}}
 <x-layout title="Buat akun">
     <section class="auth-layout shell">
         <div class="auth-intro">

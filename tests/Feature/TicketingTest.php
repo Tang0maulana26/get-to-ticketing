@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
+/**
+ * Feature tests for catalog, auth, checkout, stock safety, payments and admin authorization.
+ */
 class TicketingTest extends TestCase
 {
     use RefreshDatabase;

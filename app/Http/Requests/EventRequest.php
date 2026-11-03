@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Validates admin event create/update input, including image upload limits. Admin only.
+ */
 class EventRequest extends FormRequest
 {
     public function authorize(): bool

@@ -1,3 +1,4 @@
+{{-- Modal form to add or edit a ticket category; submitted through fetch. --}}
 <x-modal :id="$modalId" :title="$ticket->exists ? 'Edit pilihan tiket' : 'Tambah pilihan tiket'">
     <form action="{{ $ticket->exists ? route('admin.tickets.update',[$event,$ticket]) : route('admin.tickets.store',$event) }}" method="post" data-fetch-form data-close-on-success>@csrf @if($ticket->exists) @method('PUT') @endif
         <label class="field"><span>Nama pilihan tiket</span><input name="name" value="{{ $ticket->name }}" placeholder="VIP / CAT 1 / Regular" required maxlength="80"></label><label class="field"><span>Deskripsi singkat</span><textarea name="description" rows="2" maxlength="300">{{ $ticket->description }}</textarea></label>

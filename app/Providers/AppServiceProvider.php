@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Application bootstrapping; registers the login rate limiter (per email+IP and per IP).
+ */
 class AppServiceProvider extends ServiceProvider
 {
     public function boot(): void

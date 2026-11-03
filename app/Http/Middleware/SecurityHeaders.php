@@ -6,6 +6,10 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
 
+/**
+ * Adds security headers (CSP, nosniff, frame denial, referrer policy, HSTS on HTTPS) to every web response.
+ * In local development it also allows the Vite dev server origin so hot reload works.
+ */
 class SecurityHeaders
 {
     public function handle(Request $request, Closure $next)
@@ -33,12 +37,12 @@ class SecurityHeaders
         $vite = '';
         $viteSocket = '';
         if (app()->environment('local') && Vite::isRunningHot()) {
-            $vite = ' '.rtrim(trim(file_get_contents(Vite::hotFile())), '/');
-            $viteSocket = ' '.preg_replace('/^http/', 'ws', trim($vite));
+            $vite = ' ' . rtrim(trim(file_get_contents(Vite::hotFile())), '/');
+            $viteSocket = ' ' . preg_replace('/^http/', 'ws', trim($vite));
         }
 
         return "default-src 'self'; img-src 'self' data:{$vite}; style-src 'self' 'unsafe-inline'{$vite}; "
-            ."script-src 'self'{$vite}; font-src 'self'{$vite}; connect-src 'self'{$vite}{$viteSocket}; "
-            ."object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'";
+            . "script-src 'self'{$vite}; font-src 'self'{$vite}; connect-src 'self'{$vite}{$viteSocket}; "
+            . "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'";
     }
 }

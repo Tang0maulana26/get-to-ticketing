@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Core booking rules: checkout, stock reservation, release/expiry and demo payment.
+ * Every mutation runs in a DB transaction with row locks (always in the same order) to stay safe under concurrent requests.
+ * Do not move stock logic to the frontend or remove these locks.
+ */
 class BookingService
 {
     private const MAX_TICKETS_PER_ORDER = 20;
