@@ -34,6 +34,7 @@ class OrderController extends Controller
             $event,
             $request->validated('tickets'),
             $request->validated('checkout_key'),
+            $request->validated('discount_code'),
         );
 
         return to_route('orders.show', $order)

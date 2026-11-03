@@ -68,6 +68,7 @@
                     <form action="{{ route('checkout', $event) }}" method="post" data-booking-form>
                         @csrf
                         <input type="hidden" name="checkout_key" value="{{ old('checkout_key', (string) Str::uuid()) }}">
+                        <input type="hidden" name="event_id" value="{{ $event->id }}">
 
                         @forelse($event->ticketCategories as $type)
                             <div class="ticket-option">
@@ -98,8 +99,39 @@
                         @endforelse
 
                         @if($event->ticketCategories->isNotEmpty())
+                            <div class="discount-box mt-4 mb-2">
+                                <label class="field mb-1">
+                                    <span>Punya kode diskon?</span>
+                                    <div class="discount-input-group">
+                                        <input type="text" 
+                                               name="discount_code" 
+                                               id="discount-code-input" 
+                                               value="{{ old('discount_code') }}" 
+                                               placeholder="Masukkan kode promo" 
+                                               maxlength="50" 
+                                               style="text-transform: uppercase;">
+                                        <button type="button" class="button secondary small" id="apply-discount-btn">Terapkan</button>
+                                    </div>
+                                    @error('discount_code')
+                                        <small class="field-error">{{ $message }}</small>
+                                    @enderror
+                                </label>
+                                <div id="discount-feedback" class="small-copy" style="display: none;"></div>
+                            </div>
+
+                            <div class="booking-breakdown" id="booking-breakdown" style="display: none; border-top: 1px dashed var(--line); padding-top: 0.75rem; margin-top: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 0.35rem;">
+                                    <span class="muted">Subtotal tiket:</span>
+                                    <strong id="breakdown-subtotal">Rp0</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #059669; margin-bottom: 0.35rem;" id="breakdown-discount-row">
+                                    <span id="breakdown-discount-label">Potongan diskon:</span>
+                                    <strong id="breakdown-discount-amount">-Rp0</strong>
+                                </div>
+                            </div>
+
                             <div class="booking-total">
-                                <span>Total <small data-ticket-count>0 tiket</small></span>
+                                <span>Total Pembayaran <small data-ticket-count>0 tiket</small></span>
                                 <strong data-ticket-total>Rp0</strong>
                             </div>
                             <div class="booking-quota-alert" data-quota-alert role="alert"></div>

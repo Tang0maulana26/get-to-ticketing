@@ -74,7 +74,7 @@ class TicketingTest extends TestCase
     }
     public function test_registration_cannot_assign_admin_role(): void
     {
-        $this->post('/register', ['name'=>'Customer', 'email'=>'new@example.test', 'password'=>'SafePassword123', 'password_confirmation'=>'SafePassword123', 'role'=>'admin'])->assertRedirect('/');
+        $this->post('/register', ['name'=>'Customer', 'username'=>'customer_new', 'email'=>'new@example.test', 'password'=>'SafePassword123', 'password_confirmation'=>'SafePassword123', 'role'=>'admin'])->assertRedirect('/');
         $this->assertDatabaseHas('users',['email'=>'new@example.test','role'=>'customer']);
     }
     public function test_authentication_rejects_wrong_password_and_allows_valid_login(): void

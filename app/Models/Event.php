@@ -38,6 +38,9 @@ class Event extends Model
         if (!$this->banner) {
             return asset('images/poster-blue.svg');
         }
-        return str_starts_with($this->banner, 'images/') ? asset($this->banner) : Storage::disk('public')->url($this->banner);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return str_starts_with($this->banner, 'images/') ? asset($this->banner) : $disk->url($this->banner);
     }
 }

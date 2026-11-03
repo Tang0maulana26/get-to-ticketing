@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Discount;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\TicketCategory;
@@ -19,12 +20,12 @@ class BookingService
 {
     private const MAX_TICKETS_PER_ORDER = 20;
 
-    public function checkout(User $user, Event $event, array $quantities, string $key): Order
+    public function checkout(User $user, Event $event, array $quantities, string $key, ?string $discountCode = null): Order
     {
         // Free stock held by this event's expired reservations before checking availability.
         $this->expire(event: $event);
 
-        return DB::transaction(function () use ($user, $event, $quantities, $key) {
+        return DB::transaction(function () use ($user, $event, $quantities, $key, $discountCode) {
             // Serialize this customer's repeated submissions; the unique key is a second safeguard.
             User::whereKey($user->id)->lockForUpdate()->firstOrFail();
 
@@ -59,12 +60,36 @@ class BookingService
                 }
             }
 
+            $subtotal = (int) $types->sum(fn ($type) => $type->price * $selected[$type->id]);
+            $discount = null;
+            $discountAmount = 0;
+
+            $cleanCode = strtoupper(trim((string) $discountCode));
+            if ($cleanCode !== '') {
+                $discount = Discount::where('code', $cleanCode)->lockForUpdate()->first();
+                if (! $discount) {
+                    $this->fail('discount_code', 'Kode diskon tidak ditemukan.');
+                }
+                $reason = null;
+                if (! $discount->isApplicable($subtotal, $reason, $event->id)) {
+                    $this->fail('discount_code', $reason ?? 'Kode diskon tidak dapat digunakan.');
+                }
+                $discountAmount = $discount->calculateDiscount($subtotal);
+                $discount->increment('used_count');
+            }
+
+            $total = max(0, $subtotal - $discountAmount);
+
             $order = Order::create([
                 'number' => (string) Str::uuid(),
                 'user_id' => $user->id,
                 'checkout_key' => $key,
                 'status' => 'pending',
-                'total' => $types->sum(fn ($type) => $type->price * $selected[$type->id]),
+                'subtotal' => $subtotal,
+                'discount_id' => $discount?->id,
+                'discount_code' => $discount?->code,
+                'discount_amount' => $discountAmount,
+                'total' => $total,
                 'expires_at' => now()->addMinutes(config('ticketing.reservation_minutes')),
             ]);
 
@@ -103,6 +128,15 @@ class BookingService
             foreach ($locked->items()->orderBy('ticket_category_id')->get() as $item) {
                 TicketCategory::whereKey($item->ticket_category_id)->lockForUpdate()->firstOrFail()->increment('stock', $item->quantity);
             }
+
+            // Release discount usage count if used
+            if ($locked->discount_id) {
+                $discount = Discount::whereKey($locked->discount_id)->lockForUpdate()->first();
+                if ($discount && $discount->used_count > 0) {
+                    $discount->decrement('used_count');
+                }
+            }
+
             $locked->update(['status' => $status]);
         }, 3);
     }

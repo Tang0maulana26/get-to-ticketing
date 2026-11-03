@@ -953,8 +953,8 @@ small {
 
 .detail-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
-    gap: 45px;
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 390px);
+    gap: 36px;
     align-items: start;
 }
 
@@ -1149,12 +1149,12 @@ small {
     display: flex;
     border: 1px solid var(--line);
     border-radius: 6px;
-    height: 34px;
+    height: 36px;
     overflow: hidden;
 }
 
 .stepper button {
-    width: 32px;
+    width: 36px;
     border: 0;
     background: var(--surface);
     color: var(--ink);
@@ -1177,7 +1177,7 @@ small {
 }
 
 .stepper input {
-    width: 40px;
+    width: 44px;
     text-align: center;
     border: 0;
     background: var(--panel);
@@ -1190,6 +1190,34 @@ small {
 
 .stepper input::-webkit-inner-spin-button {
     appearance: none;
+}
+
+.discount-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.discount-input-group input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.tag-promo {
+    display: inline-block;
+    padding: 2px 7px;
+    background: #e6f6ee;
+    color: #166534;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
 }
 
 .booking-total {
@@ -1285,6 +1313,39 @@ small {
 
 .field .field-error {
     color: #b23434;
+}
+
+.password-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-field-wrapper input {
+    width: 100%;
+    padding-right: 42px;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+    color: var(--ink);
 }
 
 /* ==========================================================================
@@ -1423,7 +1484,7 @@ small {
 }
 
 .order-detail {
-    max-width: 900px;
+    max-width: 800px;
 }
 
 .panel {
@@ -1463,6 +1524,24 @@ small {
 .demo-note p {
     margin-top: 4px;
     color: var(--muted);
+}
+
+.tickets-heading-group {
+    margin-top: 48px;
+    margin-bottom: 24px;
+}
+
+.tickets-heading-group h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+}
+
+.tickets-heading-group p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
 }
 
 .issued-ticket {
@@ -1860,7 +1939,25 @@ td small {
         align-items: flex-start;
         gap: 10px;
     }
-    .issued-ticket {
+    .tickets-heading-group {
+    margin-top: 48px;
+    margin-bottom: 24px;
+}
+
+.tickets-heading-group h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+}
+
+.tickets-heading-group p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.issued-ticket {
         padding: 18px;
         flex-direction: column;
         align-items: flex-start;

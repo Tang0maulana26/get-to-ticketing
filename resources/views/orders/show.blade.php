@@ -14,14 +14,31 @@
                     <p class="muted">{{ $item->event_start_time->format('d M Y · H:i') }} WIB · {{ $item->venue }}</p>
                     <p>{{ $item->ticket_name }} × {{ $item->quantity }}</p>
                 </div><strong>Rp{{ number_format($item->subtotal,0,',','.') }}</strong>
-            </div>@endforeach<div class="booking-total"><span>Total pembayaran</span><strong>Rp{{ number_format($order->total,0,',','.') }}</strong></div>
+            </div>@endforeach
+            @if($order->discount_amount > 0)
+            <div class="booking-breakdown mt-4 pt-3" style="border-top: 1px dashed var(--line);">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 0.35rem;">
+                    <span class="muted">Subtotal tiket:</span>
+                    <strong>Rp{{ number_format($order->subtotal, 0, ',', '.') }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 14px; color: #059669; margin-bottom: 0.35rem;">
+                    <span>Potongan diskon ({{ $order->discount_code }}):</span>
+                    <strong>-Rp{{ number_format($order->discount_amount, 0, ',', '.') }}</strong>
+                </div>
+            </div>
+            @endif
+            <div class="booking-total"><span>Total pembayaran</span><strong>Rp{{ number_format($order->total,0,',','.') }}</strong></div>
             @if($order->status === 'pending')<div class="notice">Selesaikan pembayaran sebelum <strong>{{ $order->expires_at->format('d M Y, H:i:s') }} WIB</strong>. Setelah itu reservasi kedaluwarsa dan stok dikembalikan.</div>@if(app()->environment('local','testing') && config('ticketing.demo_payments'))<div class="demo-note"><strong>Mode demo portofolio</strong>
                 <p>Pembayaran ini adalah simulasi. Tidak ada uang yang ditagih.</p>
             </div>
             <form action="{{ route('orders.pay', $order) }}" method="post">@csrf<button class="button full">Simulasikan pembayaran berhasil →</button></form>@else<p class="notice">Pembayaran online belum tersedia. Hubungi pengelola sebelum batas waktu reservasi.</p>@endif<form action="{{ route('orders.cancel', $order) }}" method="post" data-confirm="Batalkan pesanan dan kembalikan stok tiket?">@csrf<button class="button secondary full mt-3">Batalkan pesanan</button></form>@endif
         </div>
-        @if($order->status === 'paid')<h2 class="mt-8 mb-4">Tiket kamu</h2>
-        <p class="muted mb-4">Simpan nomor tiket ini. Tiket pada lingkungan demo tidak berlaku untuk event nyata.</p>@foreach($order->items as $item)@foreach($item->tickets as $ticket)<article class="issued-ticket">
+        @if($order->status === 'paid')
+        <div class="tickets-heading-group">
+            <h2>Tiket kamu</h2>
+            <p class="muted">Simpan nomor tiket ini. Tiket pada lingkungan demo tidak berlaku untuk event nyata.</p>
+        </div>
+        @foreach($order->items as $item)@foreach($item->tickets as $ticket)<article class="issued-ticket">
             <div>
                 <p class="eyebrow">THE GET TO / ADMIT ONE</p>
                 <h3>{{ $item->event_title }}</h3>

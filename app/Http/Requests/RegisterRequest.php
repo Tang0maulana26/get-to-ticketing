@@ -12,14 +12,18 @@ class RegisterRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $this->merge(['email' => strtolower(trim((string) $this->email))]);
+        $this->merge([
+            'email' => strtolower(trim((string) $this->email)),
+            'username' => strtolower(trim((string) $this->username)),
+        ]);
     }
 
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:255', 'unique:users'],
+            'username' => ['required', 'string', 'min:3', 'max:50', 'alpha_dash', 'unique:users,username'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'max:200', Password::min(10)->letters()->numbers()],
         ];
     }

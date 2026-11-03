@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{User, Category, Event};
+use App\Models\{Category, Discount, Event, User};
 use Illuminate\Support\Facades\{Hash, Storage};
 use Illuminate\Support\Str;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -22,16 +22,25 @@ class DatabaseSeeder extends Seeder
     {
         if (!app()->environment('local', 'testing')) { throw new \RuntimeException('Demo seeding is only allowed locally.'); }
         $credentials = [];
-        foreach (['admin' => 'Admin The Get To', 'customer' => 'Teman Konser'] as $role => $name) {
+        foreach (['admin' => ['Admin The Get To', 'admin'], 'customer' => ['Teman Konser', 'customer']] as $role => [$name, $username]) {
             $email = $role.'@thegetto.test';
-            if (!User::where('email', $email)->exists()) {
+            $user = User::where('email', $email)->first();
+            if (! $user) {
                 $password = Str::password(18);
-                $user = new User(['name' => $name, 'email' => $email, 'password' => Hash::make($password)]);
-                $user->role = $role; $user->save();
-                $credentials[$role] = ['email' => $email, 'password' => $password];
+                $user = new User(['name' => $name, 'username' => $username, 'email' => $email, 'password' => Hash::make($password)]);
+                $user->role = $role;
+                $user->save();
+                $credentials[$role] = ['name' => $name, 'username' => $username, 'email' => $email, 'password' => $password];
+            } else {
+                if (empty($user->username)) {
+                    $user->username = $username;
+                    $user->save();
+                }
             }
         }
-        if ($credentials) { Storage::disk('local')->put('demo-accounts.json', json_encode($credentials, JSON_PRETTY_PRINT)); }
+        if ($credentials) {
+            Storage::disk('local')->put('demo-accounts.json', json_encode($credentials, JSON_PRETTY_PRINT));
+        }
         $category = Category::firstOrCreate(['slug' => 'music'], ['name' => 'Musik']);
         $events = [
             ['Blue Hour Festival', 'blue-hour-festival', 'Jakarta', 'Senayan Park', 'Jl. Gerbang Pemuda No. 3', 21, 275000, 'poster-blue.svg', 'Satu langit, banyak suara. Rayakan musik independen di antara senja dan cahaya kota.'],
@@ -47,5 +56,23 @@ class DatabaseSeeder extends Seeder
                 $event->ticketCategories()->firstOrCreate(['name' => $name], ['price' => $price + $extra, 'capacity' => $capacity, 'stock' => $capacity, 'description' => $description, 'max_per_order' => 6, 'active' => true]);
             }
         }
+
+        Discount::firstOrCreate(['code' => 'GETTO20'], [
+            'name' => 'Diskon Peluncuran 20%',
+            'type' => 'percent',
+            'value' => 20,
+            'min_order_amount' => 100000,
+            'max_discount_amount' => 100000,
+            'usage_limit' => 100,
+            'active' => true,
+        ]);
+        Discount::firstOrCreate(['code' => 'HEMAT50K'], [
+            'name' => 'Potongan Langsung Rp50.000',
+            'type' => 'fixed',
+            'value' => 50000,
+            'min_order_amount' => 150000,
+            'usage_limit' => 50,
+            'active' => true,
+        ]);
     }
 }

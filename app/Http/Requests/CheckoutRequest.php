@@ -13,6 +13,7 @@ class CheckoutRequest extends FormRequest
     {
         return [
             'checkout_key' => ['required', 'uuid'],
+            'discount_code' => ['nullable', 'string', 'max:50'],
             'tickets' => ['required', 'array', 'max:30'],
             'tickets.*' => ['required', 'integer', 'min:0', 'max:20'],
         ];

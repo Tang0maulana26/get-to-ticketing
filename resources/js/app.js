@@ -10,6 +10,29 @@ document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
     } catch (_) {}
 });
 
+// Toggle password visibility
+document.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-toggle-password]");
+    if (!toggle) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const wrapper = toggle.closest(".password-field-wrapper");
+    if (!wrapper) return;
+    const input = wrapper.querySelector("input");
+    if (!input) return;
+
+    const isPassword = input.getAttribute("type") === "password";
+    input.setAttribute("type", isPassword ? "text" : "password");
+    toggle.setAttribute("aria-label", isPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi");
+
+    const eyeShow = toggle.querySelector(".eye-show");
+    const eyeHide = toggle.querySelector(".eye-hide");
+    if (eyeShow && eyeHide) {
+        eyeShow.style.display = isPassword ? "none" : "";
+        eyeHide.style.display = isPassword ? "" : "none";
+    }
+});
+
 // Modal helpers (delegated so they keep working after partial page refreshes)
 document.addEventListener("click", (event) => {
     const opener = event.target.closest("[data-open-modal]");
@@ -248,12 +271,26 @@ document.addEventListener("submit", (event) => {
     if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
 });
 
-// Booking form interactivity & ticket stepper
+// Booking form interactivity & ticket stepper with promo discount calculation
 const booking = document.querySelector("[data-booking-form]");
 if (booking) {
     const inputs = [...booking.querySelectorAll("[data-price]")];
     const quotaAlert = booking.querySelector("[data-quota-alert]");
     const submitBtn = booking.querySelector("[data-booking-submit]");
+
+    const discountInput = booking.querySelector("#discount-code-input");
+    const applyDiscountBtn = booking.querySelector("#apply-discount-btn");
+    const discountFeedback = booking.querySelector("#discount-feedback");
+    const breakdownEl = booking.querySelector("#booking-breakdown");
+    const breakdownSubtotal = booking.querySelector("#breakdown-subtotal");
+    const breakdownDiscountRow = booking.querySelector("#breakdown-discount-row");
+    const breakdownDiscountLabel = booking.querySelector("#breakdown-discount-label");
+    const breakdownDiscountAmount = booking.querySelector("#breakdown-discount-amount");
+
+    let currentSubtotal = 0;
+    let appliedDiscount = null;
+
+    const formatRupiah = (num) => "Rp" + new Intl.NumberFormat("id-ID").format(num);
 
     const syncStepperButtons = (input) => {
         const parent = input.closest(".stepper");
@@ -283,12 +320,36 @@ if (booking) {
             syncStepperButtons(input);
         });
 
+        currentSubtotal = total;
+        let finalTotal = total;
+
+        if (appliedDiscount && total > 0) {
+            let discountAmount = 0;
+            if (appliedDiscount.type === "percent") {
+                discountAmount = Math.round((total * appliedDiscount.value) / 100);
+            } else {
+                discountAmount = appliedDiscount.value;
+            }
+            discountAmount = Math.min(discountAmount, total);
+            finalTotal = Math.max(0, total - discountAmount);
+
+            if (breakdownEl) breakdownEl.style.display = "block";
+            if (breakdownSubtotal) breakdownSubtotal.textContent = formatRupiah(total);
+            if (breakdownDiscountRow) {
+                breakdownDiscountRow.style.display = "flex";
+                if (breakdownDiscountLabel) breakdownDiscountLabel.textContent = `Potongan (${appliedDiscount.code}):`;
+                if (breakdownDiscountAmount) breakdownDiscountAmount.textContent = "-" + formatRupiah(discountAmount);
+            }
+        } else {
+            if (breakdownEl) breakdownEl.style.display = "none";
+            if (breakdownDiscountRow) breakdownDiscountRow.style.display = "none";
+        }
+
         const totalEl = booking.querySelector("[data-ticket-total]");
         const countEl = booking.querySelector("[data-ticket-count]");
 
         if (totalEl) {
-            totalEl.textContent =
-                "Rp" + new Intl.NumberFormat("id-ID").format(total);
+            totalEl.textContent = formatRupiah(finalTotal);
         }
         if (countEl) {
             countEl.textContent = count + " tiket";
@@ -307,6 +368,66 @@ if (booking) {
             submitBtn.disabled = count === 0 || count > 20;
         }
     };
+
+    const checkDiscount = async () => {
+        if (!discountInput) return;
+        const code = discountInput.value.trim().toUpperCase();
+        if (!code) {
+            appliedDiscount = null;
+            if (discountFeedback) {
+                discountFeedback.style.display = "none";
+                discountFeedback.textContent = "";
+            }
+            update();
+            return;
+        }
+
+        if (currentSubtotal <= 0) {
+            if (discountFeedback) {
+                discountFeedback.style.display = "block";
+                discountFeedback.style.color = "#dc2626";
+                discountFeedback.textContent = "Pilih tiket terlebih dahulu untuk menerapkan diskon.";
+            }
+            return;
+        }
+
+        if (applyDiscountBtn) applyDiscountBtn.disabled = true;
+
+        const eventId = Number(booking.querySelector('[name="event_id"]')?.value) || undefined;
+
+        const { ok, data } = await requestJson("/discounts/check", {
+            method: "POST",
+            body: { code, subtotal: currentSubtotal, event_id: eventId },
+            form: booking,
+        });
+
+        if (applyDiscountBtn) applyDiscountBtn.disabled = false;
+
+        if (ok && data.ok) {
+            appliedDiscount = data;
+            if (discountFeedback) {
+                discountFeedback.style.display = "block";
+                discountFeedback.style.color = "#059669";
+                discountFeedback.textContent = data.message;
+            }
+        } else {
+            appliedDiscount = null;
+            if (discountFeedback) {
+                discountFeedback.style.display = "block";
+                discountFeedback.style.color = "#dc2626";
+                discountFeedback.textContent = data?.message || "Kode diskon tidak valid.";
+            }
+        }
+        update();
+    };
+
+    applyDiscountBtn?.addEventListener("click", checkDiscount);
+    discountInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            checkDiscount();
+        }
+    });
 
     booking.querySelectorAll("[data-step]").forEach((button) => {
         button.addEventListener("click", () => {

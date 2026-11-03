@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 // Account for customers and admins (`role`), used for login and as the owner of orders.
 // `role` is intentionally not fillable so registration can never grant admin access.
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'username', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -40,5 +40,13 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public static function findByLogin(string $login): ?self
+    {
+        $clean = strtolower(trim($login));
+        return static::where('email', $clean)
+            ->orWhere('username', $clean)
+            ->first();
     }
 }

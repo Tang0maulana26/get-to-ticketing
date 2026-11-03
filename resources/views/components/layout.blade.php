@@ -1,13 +1,15 @@
 {{-- Master layout: head/assets, navigation, flash messages and footer for both visitor and admin pages. --}}
-@props(['title' => 'Temukan momen berikutnya', 'admin' => false])
+@props(['title' => '', 'admin' => false])
 <!DOCTYPE html>
 <html lang="id" @if($admin) data-admin="true" @endif>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="The Get To — temukan konser, pilih tiket, dan buat momen yang ingin kamu ulang.">
+    <meta name="description" content="The Get To — temukan event, pilih tiket, dan buat momen yang ingin kamu ulang.">
     <title>{{ $title }} · The Get To</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="alternate-icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -55,6 +57,9 @@
                 @endunless
 
                 @auth
+                <a class="nav-login {{ request()->routeIs('profile.*') ? 'selected' : '' }}" href="{{ route('profile.edit') }}">
+                    Profil
+                </a>
                 @if(auth()->user()->isAdmin())
                 <a class="button small secondary" href="{{ route('admin.dashboard') }}">Admin</a>
                 @endif
@@ -80,8 +85,14 @@
             <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'selected' : '' }}">
                 Event & tiket
             </a>
-            <a href="{{ route('admin.customers') }}" class="{{ request()->routeIs('admin.customers') ? 'selected' : '' }}">
-                Pelanggan
+            <a href="{{ route('admin.discounts.index') }}" class="{{ request()->routeIs('admin.discounts.*') ? 'selected' : '' }}">
+                Kode diskon
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*', 'admin.customers') ? 'selected' : '' }}">
+                Pengguna & peran
+            </a>
+            <a href="{{ route('admin.reset.index') }}" class="{{ request()->routeIs('admin.reset.*') ? 'selected' : '' }}" style="color: #b91c1c;">
+                Reset data
             </a>
         </nav>
     </div>
