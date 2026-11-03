@@ -13,9 +13,7 @@
                 </p>
 
                 <div class="vintage-actions">
-                    <a class="vintage-btn"
-                        href="#events"
-                        onclick="event.preventDefault(); document.getElementById('events').scrollIntoView({ behavior: 'smooth' });">
+                    <a class="vintage-btn" href="#events">
                         {{ __('Explore Events') }} <span>&rarr;</span>
                     </a>
                 </div>
@@ -39,7 +37,7 @@
                 <h2>{{ __('Available events') }}</h2>
                 <p class="muted">{{ __('Discover the events of your choice and secure your spot') }}</p>
             </div>
-            <span class="count-label" data-catalog-count>{{ __(':count events available', ['count' => $events->total()]) }}</span>
+            <span class="count-label" data-catalog-count data-count-template="{{ __(':count events available', ['count' => ':count']) }}">{{ __(':count events available', ['count' => $events->total()]) }}</span>
         </div>
 
         <!-- Filter & Search Bar -->

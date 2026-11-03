@@ -22,11 +22,25 @@ class LocaleController extends Controller
         cookie()->queue(cookie()->forever('locale', $locale));
 
         $redirect = $request->input('redirect') ?? $request->headers->get('referer');
-        if ($redirect) {
-            return redirect($redirect);
+        if (is_string($redirect) && $this->isSafeRedirectUrl($redirect, $request)) {
+            return redirect()->to($redirect);
         }
 
-        return back();
+        return to_route('catalog');
+    }
+
+    private function isSafeRedirectUrl(string $url, Request $request): bool
+    {
+        if (str_starts_with($url, '/') && ! str_starts_with($url, '//') && ! str_starts_with($url, '/\\')) {
+            return true;
+        }
+
+        $parsed = parse_url($url);
+        if (! is_array($parsed) || empty($parsed['host'])) {
+            return false;
+        }
+
+        return strcasecmp($parsed['host'], $request->getHost()) === 0;
     }
 }
 

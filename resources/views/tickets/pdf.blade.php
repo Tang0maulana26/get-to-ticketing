@@ -207,7 +207,7 @@
                 <table class="ticket-card" cellpadding="0" cellspacing="0">
                     <tr>
                         <td class="ticket-main">
-                            <span class="event-badge">{{ $item->ticket_category_name }} &bull; Ticket {{ $ticketIndex }} of {{ $totalTickets }}</span>
+                            <span class="event-badge">{{ $item->ticket_name }} &bull; Ticket {{ $ticketIndex }} of {{ $totalTickets }}</span>
                             <h2 class="event-name">{{ $item->event_title }}</h2>
 
                             <table class="info-table" cellpadding="0" cellspacing="0">
@@ -215,8 +215,8 @@
                                     <td style="width: 50%;">
                                         <div class="info-label">Date & Time / Jadwal Acara</div>
                                         <div class="info-value">
-                                            @if($item->event)
-                                                {{ $item->event->start_time->format('l, d M Y - H:i') }} WIB
+                                            @if($item->event_start_time)
+                                                {{ $item->event_start_time->format('l, d M Y - H:i') }} WIB
                                             @else
                                                 -
                                             @endif
@@ -225,9 +225,8 @@
                                     <td style="width: 50%;">
                                         <div class="info-label">Venue / Lokasi</div>
                                         <div class="info-value">
-                                            {{ $item->event->venue ?? 'Main Stage' }}
+                                            {{ $item->venue ?? 'Main Stage' }}
                                         </div>
-                                        <div class="info-sub">{{ $item->event->city ?? '' }}</div>
                                     </td>
                                 </tr>
                                 <tr>
@@ -238,7 +237,7 @@
                                     </td>
                                     <td style="padding-top: 14px;">
                                         <div class="info-label">Category & Price / Kategori & Harga</div>
-                                        <div class="info-value">{{ $item->ticket_category_name }}</div>
+                                        <div class="info-value">{{ $item->ticket_name }}</div>
                                         <div class="info-sub">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</div>
                                     </td>
                                 </tr>

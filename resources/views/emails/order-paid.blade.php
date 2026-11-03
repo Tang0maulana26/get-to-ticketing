@@ -195,7 +195,7 @@
                         <strong>Lokasi:</strong> {{ $item->venue ?? 'Main Stage' }}
                     </div>
                     <div class="event-detail">
-                        <strong>Kategori:</strong> {{ $item->ticket_category_name }} &bull; {{ $item->quantity }} Tiket
+                        <strong>Kategori:</strong> {{ $item->ticket_name }} &bull; {{ $item->quantity }} Tiket
                     </div>
 
                     <div class="ticket-list">

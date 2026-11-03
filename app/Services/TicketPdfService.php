@@ -59,7 +59,7 @@ class TicketPdfService
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOption('tempDir', $tempDir);
         $pdf->setOption('chroot', [base_path(), $tempDir]);
-        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isRemoteEnabled', false);
         $pdf->setOption('isHtml5ParserEnabled', true);
 
         return $pdf;

@@ -113,14 +113,14 @@ class BookingService
         }, 3);
     }
 
-    public function release(Order $order, string $status = 'cancelled'): void
+    public function release(Order $order, string $status = 'cancelled', bool $forceExpire = false): void
     {
-        DB::transaction(function () use ($order, $status) {
+        DB::transaction(function () use ($order, $status, $forceExpire) {
             $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
             if ($locked->status !== 'pending') {
                 return;
             }
-            if ($status === 'expired' && $locked->expires_at->isFuture()) {
+            if ($status === 'expired' && ! $forceExpire && $locked->expires_at->isFuture()) {
                 return;
             }
 
@@ -137,7 +137,12 @@ class BookingService
                 }
             }
 
-            $locked->update(['status' => $status]);
+            $attributes = ['status' => $status];
+            if ($status === 'expired' && $forceExpire && $locked->expires_at->isFuture()) {
+                $attributes['expires_at'] = now()->subSecond();
+            }
+
+            $locked->update($attributes);
         }, 3);
     }
 
@@ -149,10 +154,10 @@ class BookingService
     /**
      * Mark an order as paid, issue tickets, and record payment information securely.
      */
-    public function markAsPaid(Order $order, string $paymentMethod = 'demo', ?string $paymentChannel = null): void
+    public function markAsPaid(Order $order, string $paymentMethod = 'demo', ?string $paymentChannel = null, bool $ignoreExpiry = false): void
     {
         // The transaction returns an error message instead of throwing, so released stock is committed first.
-        $error = DB::transaction(function () use ($order, $paymentMethod, $paymentChannel) {
+        $error = DB::transaction(function () use ($order, $paymentMethod, $paymentChannel, $ignoreExpiry) {
             $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
             if ($locked->status === 'paid') {
                 return null;
@@ -160,7 +165,7 @@ class BookingService
             if ($locked->status !== 'pending') {
                 return 'Pesanan ini sudah tidak dapat dibayar.';
             }
-            if ($locked->expires_at->isPast()) {
+            if (! $ignoreExpiry && $locked->expires_at->isPast()) {
                 $this->release($locked, 'expired');
 
                 return 'Waktu pembayaran habis. Stok tiket telah dikembalikan.';

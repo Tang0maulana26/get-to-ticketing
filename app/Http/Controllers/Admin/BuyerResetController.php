@@ -63,7 +63,7 @@ class BuyerResetController extends Controller
         ]);
 
         DB::transaction(function () use ($user) {
-            $orders = Order::where('user_id', $user->id)->lockForUpdate()->get();
+            $orders = Order::where('user_id', $user->id)->with('items')->lockForUpdate()->get();
 
             foreach ($orders as $order) {
                 if ($order->status === 'pending') {
@@ -78,18 +78,19 @@ class BuyerResetController extends Controller
                                 ?->increment('stock', $item->quantity);
                         }
                     }
-                }
 
-                if ($order->discount_id) {
-                    $discount = Discount::whereKey($order->discount_id)->lockForUpdate()->first();
-                    if ($discount && $discount->used_count > 0) {
-                        $discount->decrement('used_count');
+                    if ($order->discount_id && $order->status === 'paid') {
+                        $discount = Discount::whereKey($order->discount_id)->lockForUpdate()->first();
+                        if ($discount && $discount->used_count > 0) {
+                            $discount->decrement('used_count');
+                        }
                     }
                 }
 
-                foreach ($order->items as $item) {
-                    $item->tickets()->delete();
-                    $item->delete();
+                $itemIds = $order->items->pluck('id');
+                if ($itemIds->isNotEmpty()) {
+                    Ticket::whereIn('order_item_id', $itemIds)->delete();
+                    OrderItem::whereIn('id', $itemIds)->delete();
                 }
 
                 $order->delete();

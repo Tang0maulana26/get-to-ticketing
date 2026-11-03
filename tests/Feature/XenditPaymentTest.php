@@ -189,5 +189,48 @@ class XenditPaymentTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_xendit_invoice_includes_discount_fee_and_paid_webhook_succeeds_after_expiry(): void
+    {
+        Http::fake([
+            'https://api.xendit.co/v2/invoices' => function ($request) {
+                $data = $request->data();
+                $this->assertEquals(150000, $data['amount']);
+                $this->assertEquals(-50000, $data['fees'][0]['value'] ?? null);
+
+                return Http::response([
+                    'id' => 'xnd_inv_disc_123',
+                    'external_id' => $data['external_id'],
+                    'status' => 'PENDING',
+                    'invoice_url' => 'https://checkout-staging.xendit.co/web/xnd_inv_disc_123',
+                    'amount' => 150000,
+                ], 200);
+            },
+        ]);
+
+        $user = User::factory()->create();
+        $order = $this->createPendingOrder($user);
+        $order->update([
+            'discount_code' => 'HEMAT50',
+            'discount_amount' => 50000,
+            'total' => 150000,
+        ]);
+
+        $this->actingAs($user)
+            ->post("/orders/{$order->number}/xendit/checkout")
+            ->assertRedirect('https://checkout-staging.xendit.co/web/xnd_inv_disc_123');
+
+        // Simulate late webhook arriving after local reservation expiry
+        $order->update(['expires_at' => now()->subMinute()]);
+
+        $this->postJson('/xendit/webhook', [
+            'id' => 'xnd_inv_disc_123',
+            'external_id' => $order->number,
+            'status' => 'PAID',
+            'payment_method' => 'QRIS',
+        ])->assertOk()->assertJson(['status' => 'OK']);
+
+        $this->assertEquals('paid', $order->fresh()->status);
+    }
 }
 

@@ -38,6 +38,11 @@ class XenditPaymentController extends Controller
             return to_route('orders.show', $order)->with('error', __('Payment deadline for this order has expired.'));
         }
 
+        if ($order->total <= 0) {
+            $this->bookings->markAsPaid($order, 'discount', 'FREE_PROMO');
+            return to_route('orders.show', $order)->with('success', __('Order is fully covered by discount! Your tickets are now active.'));
+        }
+
         try {
             // If already generated invoice is still valid, reuse or generate new
             if (empty($order->xendit_invoice_url)) {
@@ -80,14 +85,13 @@ class XenditPaymentController extends Controller
 
             if ($status === 'PAID' || $status === 'SETTLED') {
                 $channel = $invoice['payment_channel'] ?? $invoice['payment_method'] ?? 'XENDIT';
-                $this->bookings->markAsPaid($order, 'xendit', $channel);
+                $this->bookings->markAsPaid($order, 'xendit', $channel, ignoreExpiry: true);
 
                 return to_route('orders.show', $order)->with('success', __('Xendit payment confirmed! Your tickets are now active.'));
             }
 
             if ($status === 'EXPIRED') {
-                $order->update(['expires_at' => now()->subMinute()]);
-                $this->bookings->release($order, 'expired');
+                $this->bookings->release($order, 'expired', forceExpire: true);
 
                 return to_route('orders.show', $order)->with('error', __('Xendit payment invoice has expired.'));
             }
@@ -131,12 +135,18 @@ class XenditPaymentController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        if ($status === 'PAID' || $status === 'SETTLED') {
-            $channel = $request->input('payment_channel') ?? $request->input('bank_code') ?? $request->input('payment_method') ?? 'XENDIT';
-            $this->bookings->markAsPaid($order, 'xendit', $channel);
-        } elseif ($status === 'EXPIRED') {
-            $order->update(['expires_at' => now()->subMinute()]);
-            $this->bookings->release($order, 'expired');
+        try {
+            if ($status === 'PAID' || $status === 'SETTLED') {
+                $channel = $request->input('payment_channel') ?? $request->input('bank_code') ?? $request->input('payment_method') ?? 'XENDIT';
+                $this->bookings->markAsPaid($order, 'xendit', $channel, ignoreExpiry: true);
+            } elseif ($status === 'EXPIRED') {
+                $this->bookings->release($order, 'expired', forceExpire: true);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Xendit Webhook ProcessingSkipped: '.$e->getMessage(), [
+                'order' => $order->number,
+                'status' => $status,
+            ]);
         }
 
         return response()->json(['status' => 'OK']);

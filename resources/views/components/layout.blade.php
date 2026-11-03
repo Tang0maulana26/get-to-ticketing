@@ -117,6 +117,18 @@
         </div>
         @endif
 
+        @if(session('notice'))
+        <div class="shell">
+            <div class="notice" role="status">{{ session('notice') }}</div>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="shell">
+            <div class="notice error" role="alert">{{ session('error') }}</div>
+        </div>
+        @endif
+
         @if($errors->any())
         <div class="shell">
             <div class="notice error" role="alert">

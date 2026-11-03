@@ -209,7 +209,10 @@ if (filterForm && results) {
             if (!ok || typeof data.html !== "string")
                 throw new Error("bad response");
             results.innerHTML = data.html;
-            if (counter) counter.textContent = `${data.total} events available`;
+            if (counter) {
+                const tpl = counter.dataset.countTemplate || ":count events available";
+                counter.textContent = tpl.replace(":count", data.total);
+            }
             if (push) history.pushState(null, "", url);
         } catch (error) {
             if (error.name === "AbortError") return;

@@ -94,5 +94,12 @@ class LocaleTest extends TestCase
             ->assertSee('Pilihan Pembayaran')
             ->assertSee('Bayar via Xendit Sandbox →');
     }
+
+    public function test_locale_switch_prevents_external_open_redirect(): void
+    {
+        $response = $this->get('/locale/id?redirect=https://evil.example.com/phish');
+
+        $response->assertRedirect(route('catalog'));
+    }
 }
 

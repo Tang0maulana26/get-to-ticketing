@@ -28,4 +28,9 @@ class OrderItem extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    public function getTicketCategoryNameAttribute(): string
+    {
+        return (string) $this->ticket_name;
+    }
 }

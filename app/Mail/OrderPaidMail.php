@@ -51,19 +51,20 @@ class OrderPaidMail extends Mailable
      */
     public function attachments(): array
     {
-        try {
-            $pdfService = app(TicketPdfService::class);
-            $pdfContent = $pdfService->output($this->order);
+        return [
+            Attachment::fromData(
+                function () {
+                    try {
+                        return app(TicketPdfService::class)->output($this->order);
+                    } catch (\Throwable $e) {
+                        report($e);
 
-            return [
-                Attachment::fromData(fn () => $pdfContent, "E-Ticket-{$this->order->number}.pdf")
-                    ->withMime('application/pdf'),
-            ];
-        } catch (\Throwable $e) {
-            report($e);
-
-            return [];
-        }
+                        return '';
+                    }
+                },
+                "E-Ticket-{$this->order->number}.pdf"
+            )->withMime('application/pdf'),
+        ];
     }
 }
 

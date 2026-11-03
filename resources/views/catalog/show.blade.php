@@ -6,7 +6,7 @@
         <div class="detail-grid">
             <div>
                 <div class="detail-banner">
-                    <img src="{{ $event->banner_url }}" alt="Poster {{ $event->title }}" width="800" height="600">
+                    <img src="{{ $event->banner_url }}" alt="Poster {{ $event->title }}" width="800" height="600" fetchpriority="high" decoding="async">
                 </div>
 
                 <div class="detail-heading">

@@ -82,7 +82,7 @@ class ProfileController extends Controller
 
         DB::transaction(function () use ($userId) {
             $user = User::findOrFail($userId);
-            $orders = Order::where('user_id', $userId)->lockForUpdate()->get();
+            $orders = Order::where('user_id', $userId)->with('items')->lockForUpdate()->get();
 
             foreach ($orders as $order) {
                 if ($order->status === 'pending') {
@@ -96,18 +96,19 @@ class ProfileController extends Controller
                                 ?->increment('stock', $item->quantity);
                         }
                     }
-                }
 
-                if ($order->discount_id) {
-                    $discount = Discount::whereKey($order->discount_id)->lockForUpdate()->first();
-                    if ($discount && $discount->used_count > 0) {
-                        $discount->decrement('used_count');
+                    if ($order->discount_id && $order->status === 'paid') {
+                        $discount = Discount::whereKey($order->discount_id)->lockForUpdate()->first();
+                        if ($discount && $discount->used_count > 0) {
+                            $discount->decrement('used_count');
+                        }
                     }
                 }
 
-                foreach ($order->items as $item) {
-                    $item->tickets()->delete();
-                    $item->delete();
+                $itemIds = $order->items->pluck('id');
+                if ($itemIds->isNotEmpty()) {
+                    \App\Models\Ticket::whereIn('order_item_id', $itemIds)->delete();
+                    \App\Models\OrderItem::whereIn('id', $itemIds)->delete();
                 }
 
                 $order->delete();

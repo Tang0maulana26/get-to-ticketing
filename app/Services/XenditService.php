@@ -35,6 +35,8 @@ class XenditService
             throw new RuntimeException('Kunci rahasia Xendit belum dikonfigurasi pada environment.');
         }
 
+        $order->loadMissing(['items', 'user']);
+
         $items = [];
         foreach ($order->items as $item) {
             $items[] = [
@@ -67,6 +69,18 @@ class XenditService
             'invoice_duration' => $durationSeconds,
             'items' => $items,
         ];
+
+        if ($order->discount_amount > 0) {
+            $discountLabel = $order->discount_code
+                ? "Potongan Diskon ({$order->discount_code})"
+                : 'Potongan Diskon';
+            $payload['fees'] = [
+                [
+                    'type' => $discountLabel,
+                    'value' => -((int) $order->discount_amount),
+                ],
+            ];
+        }
 
         $response = Http::withBasicAuth($this->secretKey, '')
             ->timeout(20)

@@ -41,8 +41,8 @@ class SecurityHeaders
             $viteSocket = ' ' . preg_replace('/^http/', 'ws', trim($vite));
         }
 
-        return "default-src 'self'; img-src 'self' data:{$vite}; style-src 'self' 'unsafe-inline'{$vite}; "
-            . "script-src 'self'{$vite}; font-src 'self'{$vite}; connect-src 'self'{$vite}{$viteSocket}; "
+        return "default-src 'self'; img-src 'self' data:{$vite}; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}; "
+            . "script-src 'self'{$vite}; font-src 'self' https://fonts.gstatic.com data:{$vite}; connect-src 'self'{$vite}{$viteSocket}; "
             . "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'";
     }
 }
