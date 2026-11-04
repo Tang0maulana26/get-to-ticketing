@@ -13,9 +13,9 @@
         <form class="filter-bar" method="get">
             <label class="search-field">
                 <span>⌕</span>
-                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search promo code or name...') }}" aria-label="Cari diskon" maxlength="100">
+                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search promo code or name...') }}" aria-label="{{ __('Search discount') }}" maxlength="100">
             </label>
-            <select name="status" aria-label="Status diskon">
+            <select name="status" aria-label="{{ __('Discount status') }}">
                 <option value="">{{ __('All statuses') }}</option>
                 <option value="active" @selected(request('status') === 'active')>{{ __('Active') }}</option>
                 <option value="inactive" @selected(request('status') === 'inactive')>{{ __('Inactive') }}</option>
@@ -48,48 +48,50 @@
                             <td>
                                 <strong>{{ $discount->name }}</strong>
                                 @if($discount->event)
-                                    <small style="color: #14446b; display: block;">🎯 Khusus: {{ $discount->event->title }}</small>
+                                    <small class="tag-promo" style="display: inline-block; margin-top: 3px;">
+                                        🎯 {{ __('Event Specific: :title', ['title' => $discount->event->title]) }}
+                                    </small>
                                 @else
-                                    <small class="muted" style="display: block;">Semua Event</small>
+                                    <small class="muted" style="display: block;">{{ __('All Events') }}</small>
                                 @endif
                             </td>
                             <td>
                                 @if($discount->type === 'percent')
                                     <strong>{{ $discount->value }}%</strong>
                                     @if($discount->max_discount_amount)
-                                        <small>(Maks. Rp{{ number_format($discount->max_discount_amount, 0, ',', '.') }})</small>
+                                        <small>({{ __('Max. Rp:amount', ['amount' => number_format($discount->max_discount_amount, 0, ',', '.')]) }})</small>
                                     @endif
                                 @else
                                     <strong>Rp{{ number_format($discount->value, 0, ',', '.') }}</strong>
                                 @endif
                             </td>
                             <td>
-                                {{ $discount->min_order_amount > 0 ? 'Rp' . number_format($discount->min_order_amount, 0, ',', '.') : 'Tanpa min.' }}
+                                {{ $discount->min_order_amount > 0 ? 'Rp' . number_format($discount->min_order_amount, 0, ',', '.') : __('No minimum') }}
                             </td>
                             <td>
                                 {{ $discount->used_count }} / {{ $discount->usage_limit ?? '∞' }}
                             </td>
                             <td>
                                 @if($discount->active)
-                                    <span class="badge badge-published">Aktif</span>
+                                    <span class="badge badge-published">{{ __('Active') }}</span>
                                 @else
-                                    <span class="badge badge-draft">Nonaktif</span>
+                                    <span class="badge badge-draft">{{ __('Inactive') }}</span>
                                 @endif
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <a class="text-link" href="{{ route('admin.discounts.edit', $discount) }}">Edit</a>
-                                    <form action="{{ route('admin.discounts.destroy', $discount) }}" method="post" data-confirm="Hapus atau nonaktifkan kode diskon ini?">
+                                    <a class="text-link" href="{{ route('admin.discounts.edit', $discount) }}">{{ __('Edit') }}</a>
+                                    <form action="{{ route('admin.discounts.destroy', $discount) }}" method="post" data-confirm="{{ __('Delete or deactivate this discount code?') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit">Hapus</button>
+                                        <button type="submit">{{ __('Delete') }}</button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">Belum ada kode diskon. Buat kode promo pertamamu.</td>
+                            <td colspan="7">{{ __('No discount codes yet. Create your first promo code.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -99,4 +101,3 @@
         <div class="pagination">{{ $discounts->links() }}</div>
     </section>
 </x-layout>
-

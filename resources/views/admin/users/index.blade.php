@@ -8,9 +8,6 @@
                 <p class="muted">{{ __('Manage registered accounts, switch admin/customer roles, and update user records.') }}</p>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <a class="button secondary" href="{{ route('admin.customers.export') }}">
-                    {{ __('Export CSV ⤓') }}
-                </a>
                 <a class="button secondary" href="{{ route('admin.reset.index') }}" style="color: #b91c1c;">
                     ⚠️ {{ __('Reset Buyer Data') }}
                 </a>
@@ -31,12 +28,12 @@
         <form class="filter-bar" method="get">
             <label class="search-field">
                 <span>⌕</span>
-                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search name, username, or email...') }}" aria-label="Cari pengguna" maxlength="100">
+                <input name="q" value="{{ request('q') }}" placeholder="{{ __('Search name, username, or email...') }}" aria-label="{{ __('Search user') }}" maxlength="100">
             </label>
-            <select name="role" aria-label="Filter peran">
+            <select name="role" aria-label="{{ __('Filter role') }}">
                 <option value="">{{ __('All roles') }}</option>
                 <option value="admin" @selected(request('role') === 'admin')>{{ __('Admin') }}</option>
-                <option value="customer" @selected(request('role') === 'customer')>{{ __('Customer (Pelanggan)') }}</option>
+                <option value="customer" @selected(request('role') === 'customer')>{{ __('Customer') }}</option>
             </select>
             <button class="button secondary" type="submit">{{ __('Filter') }}</button>
             @if(request()->hasAny(['q', 'role']))
@@ -48,12 +45,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Pengguna</th>
-                        <th>Peran (Role)</th>
-                        <th>Jumlah Pesanan</th>
-                        <th>Total Pembelian Lunas</th>
-                        <th>Bergabung</th>
-                        <th>Aksi</th>
+                        <th>{{ __('User') }}</th>
+                        <th>{{ __('Role') }}</th>
+                        <th>{{ __('Order count') }}</th>
+                        <th>{{ __('Paid spending') }}</th>
+                        <th>{{ __('Joined') }}</th>
+                        <th>{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,17 +58,17 @@
                         <tr>
                             <td>
                                 <strong>{{ $user->name }}</strong>
-                                <small style="display: block; color: var(--strong);">&#64;{{ $user->username ?? 'belum-set' }}</small>
+                                <small class="muted" style="display: block;">&#64;{{ $user->username ?? 'belum-set' }}</small>
                                 <small class="muted">{{ $user->email }}</small>
                             </td>
                             <td>
                                 @if($user->isAdmin())
-                                    <span class="badge badge-published">Admin</span>
+                                    <span class="badge badge-published">{{ __('Admin') }}</span>
                                 @else
-                                    <span class="badge badge-draft">Pelanggan</span>
+                                    <span class="badge badge-draft">{{ __('Customer') }}</span>
                                 @endif
                                 @if(auth()->id() === $user->id)
-                                    <small class="muted" style="display: block;">(Akun Anda)</small>
+                                    <small class="muted" style="display: block;">({{ __('Your account') }})</small>
                                 @endif
                             </td>
                             <td>{{ $user->orders_count }}</td>
@@ -79,12 +76,12 @@
                             <td>{{ $user->created_at->format('d M Y') }}</td>
                             <td>
                                 <div class="table-actions">
-                                    <a class="text-link" href="{{ route('admin.users.edit', $user) }}">Edit & Role</a>
+                                    <a class="text-link" href="{{ route('admin.users.edit', $user) }}">{{ __('Edit & Role') }}</a>
                                     @if(auth()->id() !== $user->id)
-                                        <form action="{{ route('admin.users.destroy', $user) }}" method="post" data-confirm="Hapus akun {{ $user->name }} (&#64;{{ $user->username }})? Seluruh riwayat pesanan dan tiketnya akan ikut dibersihkan.">
+                                        <form action="{{ route('admin.users.destroy', $user) }}" method="post" data-confirm="{{ __('Delete account :name (@:username)? All associated orders and tickets will also be cleared.', ['name' => $user->name, 'username' => $user->username]) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" style="color: #b91c1c;">Hapus</button>
+                                            <button type="submit" style="color: #b91c1c;">{{ __('Delete') }}</button>
                                         </form>
                                     @endif
                                 </div>
@@ -92,7 +89,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">Tidak ada pengguna yang cocok dengan kriteria pencarian.</td>
+                            <td colspan="6">{{ __('No users found matching search criteria.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

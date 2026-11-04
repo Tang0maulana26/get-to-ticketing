@@ -42,6 +42,11 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function canCheckInTickets(): bool
+    {
+        return in_array($this->role, ['admin', 'gate_staff'], true);
+    }
+
     public static function findByLogin(string $login): ?self
     {
         $clean = strtolower(trim($login));

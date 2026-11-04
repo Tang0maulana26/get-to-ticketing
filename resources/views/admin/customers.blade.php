@@ -50,7 +50,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">Belum ada pelanggan.</td>
+                            <td colspan="6">{{ __('No customers yet.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

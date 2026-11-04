@@ -132,12 +132,71 @@
                 </div>
             </div>
         </div>
-        @foreach($order->items as $item)@foreach($item->tickets as $ticket)<article class="issued-ticket">
-            <div>
-                <p class="eyebrow">THE GET TO / ADMIT ONE</p>
-                <h3>{{ $item->event_title }}</h3>
-                <p>{{ $item->ticket_name }} · {{ __('1 person') }}</p><code>{{ $ticket->code }}</code>
-            </div><x-status-badge :status="$ticket->status" />
-        </article>@endforeach @endforeach @endif
+        @foreach($order->items as $item)
+            @foreach($item->tickets as $ticket)
+                <article class="issued-ticket">
+                    <div>
+                        <p class="eyebrow">THE GET TO / ADMIT ONE</p>
+                        <h3>{{ $item->event_title }}</h3>
+                        <p>{{ $item->ticket_name }} · {{ __('1 person') }}</p>
+                        <code>{{ $ticket->code }}</code>
+                    </div>
+                    <div class="issued-ticket-actions">
+                        <x-status-badge :status="$ticket->status" />
+                        <button type="button" class="button small" data-open-modal="ticket-pass-{{ $ticket->id }}" style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
+                            <span>📱</span>
+                            <span>{{ __('View QR Pass') }}</span>
+                        </button>
+                    </div>
+                </article>
+
+                {{-- Interactive Mobile-First Digital Admission Pass Modal --}}
+                <x-modal :id="'ticket-pass-' . $ticket->id" :title="__('Digital Admission Pass')">
+                    <div class="mobile-pass-card">
+                        <div class="pass-header">
+                            <span class="pass-badge">{{ $item->ticket_name }}</span>
+                            <h3 class="pass-event">{{ $item->event_title }}</h3>
+                            <p class="pass-venue">
+                                📍 {{ $item->venue }}<br>
+                                🕒 {{ $item->event_start_time ? $item->event_start_time->locale(app()->getLocale())->translatedFormat('l, d F Y · H:i') : '-' }} WIB
+                            </p>
+                        </div>
+
+                        <div class="pass-qr-wrapper">
+                            @if($ticket->qr_code_svg)
+                                <img src="{{ $ticket->qr_code_svg }}" alt="QR Code {{ $ticket->code }}" class="pass-qr-img" width="220" height="220">
+                            @endif
+                            <div class="pass-scan-line" aria-hidden="true"></div>
+                        </div>
+
+                        <div class="pass-code-pill">
+                            <span class="pass-code-label">{{ __('TICKET CODE') }}</span>
+                            <code class="pass-code-val">{{ $ticket->code }}</code>
+                        </div>
+
+                        <div class="pass-security-indicator">
+                            <span class="live-pulse-dot" aria-hidden="true"></span>
+                            <span>{{ __('Official Entry Pass • Live Admission Token') }}</span>
+                        </div>
+
+                        <div class="pass-holder-info">
+                            <div>
+                                <small class="muted">{{ __('TICKET HOLDER') }}</small>
+                                <strong>{{ $order->customer_name ?? $order->user->name }}</strong>
+                            </div>
+                            <div style="text-align: right;">
+                                <small class="muted">{{ __('ADMISSION STATUS') }}</small>
+                                <div><x-status-badge :status="$ticket->status" /></div>
+                            </div>
+                        </div>
+
+                        <div class="pass-warning-note">
+                            🛡️ {{ __('Show this screen directly to venue staff at the gate. Screenshots or duplicate copies will be rejected by the ticket scanner.') }}
+                        </div>
+                    </div>
+                </x-modal>
+            @endforeach
+        @endforeach 
+        @endif
     </section>
 </x-layout>

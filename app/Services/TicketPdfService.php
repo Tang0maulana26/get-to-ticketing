@@ -44,7 +44,7 @@ class TicketPdfService
                 $qrFilePath = $tempDir . DIRECTORY_SEPARATOR . $qrFilename;
 
                 if (! file_exists($qrFilePath) || filesize($qrFilePath) === 0) {
-                    file_put_contents($qrFilePath, $qrCodeGenerator->render($ticket->code));
+                    file_put_contents($qrFilePath, $qrCodeGenerator->render($ticket->getQrPayload()));
                 }
 
                 $qrCodes[$ticket->id] = str_replace('\\', '/', $qrFilePath);

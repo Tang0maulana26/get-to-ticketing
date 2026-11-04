@@ -31,17 +31,17 @@
             </div>
         </div>
 
-        <div class="panel" style="border: 2px solid #ef4444; background: #fffdfd;">
+        <div class="panel panel-danger" style="border-width: 2px; max-width: 860px; margin-inline: auto;">
             <div class="mb-6">
-                <h2 style="color: #b91c1c;">{{ __('⚠️ Data Deletion Safety Guards') }}</h2>
+                <h2>{{ __('⚠️ Data Deletion Safety Guards') }}</h2>
                 <p class="muted mt-2">
                     {{ __('This feature is designed specifically to clean dummy/portfolio transactions so the system can be re-tested from a fresh state.') }}
                 </p>
             </div>
 
             <div class="grid md:grid-cols-2 gap-4 mb-6">
-                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 4px;">
-                    <strong style="color: #166534;">{{ __('✓ Data That Remains SAFE (Not Deleted):') }}</strong>
+                <div class="admin-card-safe">
+                    <strong>{{ __('✓ Data That Remains SAFE (Not Deleted):') }}</strong>
                     <ul class="muted mt-2" style="padding-left: 1.25rem; font-size: 0.9rem;">
                         <li>{{ __('All concert events and performances') }}</li>
                         <li>{{ __('All banner images and gallery posters') }}</li>
@@ -50,35 +50,35 @@
                     </ul>
                 </div>
 
-                <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; border-radius: 4px;">
-                    <strong style="color: #991b1b;">✕ Data Yang Akan DIBERSIHKAN:</strong>
+                <div class="admin-card-danger">
+                    <strong>{{ __('✕ Data That Will Be CLEARED:') }}</strong>
                     <ul class="muted mt-2" style="padding-left: 1.25rem; font-size: 0.9rem;">
-                        <li>Semua pesanan pelanggan (pending, paid, expired)</li>
-                        <li>Semua kode tiket yang telah diterbitkan</li>
-                        <li>Riwayat checkout dan keranjang transaksi</li>
-                        <li>Stok tiket akan dipulihkan 100% ke kapasitas awal</li>
+                        <li>{{ __('All customer orders (pending, paid, expired)') }}</li>
+                        <li>{{ __('All issued ticket codes') }}</li>
+                        <li>{{ __('Checkout history and cart transactions') }}</li>
+                        <li>{{ __('Ticket stock will be 100% restored to initial capacity') }}</li>
                     </ul>
                 </div>
             </div>
 
-            <form action="{{ route('admin.reset.all') }}" method="post" data-confirm="PERINGATAN TERAKHIR: Anda yakin ingin menghapus seluruh data transaksi pembeli sekarang?">
+            <form action="{{ route('admin.reset.all') }}" method="post" data-confirm="{{ __('FINAL WARNING: Are you sure you want to delete all buyer transaction data now?') }}">
                 @csrf
 
                 <div class="form-row">
                     <label class="field">
-                        <span>1. Masukkan Kata Sandi Admin Anda Aktif:</span>
+                        <span>{{ __('1. Enter Your Active Admin Password:') }}</span>
                         <input type="password" 
                                name="current_password" 
                                required 
                                autocomplete="current-password" 
-                               placeholder="Kata sandi akun admin saat ini">
+                               placeholder="{{ __('Current admin account password') }}">
                         @error('current_password')
                             <small class="field-error">{{ $message }}</small>
                         @enderror
                     </label>
 
                     <label class="field">
-                        <span>2. Ketik frasa konfirmasi: <strong>RESET-DATA-PEMBELI</strong></span>
+                        <span>{!! __('2. Type confirmation phrase: <strong>RESET-DATA-PEMBELI</strong>') !!}</span>
                         <input type="text" 
                                name="confirmation_phrase" 
                                required 
@@ -91,8 +91,8 @@
                 </div>
 
                 <div class="mt-6">
-                    <button class="button full" style="background: #b91c1c; border-color: #991b1b; color: #ffffff;" type="submit">
-                        Konfirmasi & Bersihkan Seluruh Data Transaksi Pembeli →
+                    <button class="button danger full" type="submit">
+                        {{ __('Confirm & Clear All Buyer Transaction Data →') }}
                     </button>
                 </div>
             </form>

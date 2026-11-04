@@ -2,7 +2,7 @@
 
 // All web routes: public catalog, guest auth, password reset, customer orders, profile, and the admin area.
 
-use App\Http\Controllers\{AuthController, CatalogController, DiscountCheckController, LocaleController, OrderController, PasswordResetController, ProfileController, TicketPdfController, XenditPaymentController};
+use App\Http\Controllers\{AuthController, CatalogController, DiscountCheckController, GateCheckInController, LocaleController, OrderController, PasswordResetController, ProfileController, TicketPdfController, XenditPaymentController};
 use App\Http\Controllers\Admin\{BuyerResetController, DashboardController, DiscountController, EventController, TicketCategoryController, UserController};
 use App\Http\Middleware\AdminOnly;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +48,13 @@ Route::middleware('auth')->group(function () {
     // E-Ticket PDF Download & Email Delivery
     Route::get('/orders/{order}/ticket-pdf', [TicketPdfController::class, 'download'])->name('orders.ticket.pdf');
     Route::post('/orders/{order}/resend-email', [TicketPdfController::class, 'resendEmail'])->middleware('throttle:10,1')->name('orders.resend.email');
+
+    // Gate Check-in & Scanner (Admin & Gate Staff)
+    Route::get('/gate/scan', [GateCheckInController::class, 'index'])->name('gate.scan');
+    Route::post('/gate/check-in', [GateCheckInController::class, 'checkIn'])->name('gate.check-in');
+    Route::post('/gate/settings', [GateCheckInController::class, 'updateSettings'])->name('gate.settings');
+    Route::get('/gate/manifest/{event}', [GateCheckInController::class, 'manifest'])->name('gate.manifest');
+    Route::post('/gate/sync-batch', [GateCheckInController::class, 'syncBatch'])->name('gate.sync-batch');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', AdminOnly::class])->group(function () {

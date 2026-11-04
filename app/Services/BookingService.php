@@ -230,6 +230,171 @@ class BookingService
         return $count;
     }
 
+    /**
+     * Retrieve gate scanner configuration (system on/off & start_time window lock) for an event.
+     *
+     * @return array{system_active: bool, time_lock_enabled: bool, hours_before_start: int}
+     */
+    public function getGateConfig(?int $eventId = null): array
+    {
+        $key = 'gate_config_' . ($eventId ?: 'global');
+        $stored = \Illuminate\Support\Facades\Cache::get($key);
+
+        if (is_array($stored)) {
+            return [
+                'system_active' => (bool) ($stored['system_active'] ?? true),
+                'time_lock_enabled' => (bool) ($stored['time_lock_enabled'] ?? false),
+                'hours_before_start' => max(0, (int) ($stored['hours_before_start'] ?? 24)),
+            ];
+        }
+
+        return [
+            'system_active' => true,
+            'time_lock_enabled' => false,
+            'hours_before_start' => 24,
+        ];
+    }
+
+    /**
+     * Save gate scanner configuration (system on/off & start_time window lock) for an event.
+     *
+     * @return array{system_active: bool, time_lock_enabled: bool, hours_before_start: int}
+     */
+    public function setGateConfig(?int $eventId, bool $systemActive, bool $timeLockEnabled, int $hoursBeforeStart = 24): array
+    {
+        $config = [
+            'system_active' => $systemActive,
+            'time_lock_enabled' => $timeLockEnabled,
+            'hours_before_start' => max(0, $hoursBeforeStart),
+        ];
+
+        $key = 'gate_config_' . ($eventId ?: 'global');
+        \Illuminate\Support\Facades\Cache::forever($key, $config);
+
+        return $config;
+    }
+
+    /**
+     * Process admission check-in for a ticket code.
+     * Validates HMAC signature if attached, ensures the order is paid, checks gate lock & start_time window,
+     * and guards against double-entry.
+     *
+     * @return array{ok: bool, message: string, ticket?: \App\Models\Ticket, status: string}
+     */
+    public function checkIn(string $rawInput, ?int $expectedEventId = null): array
+    {
+        $raw = trim($rawInput);
+        $parts = explode('.', $raw);
+        $code = trim($parts[0]);
+        $signature = isset($parts[1]) ? trim($parts[1]) : null;
+
+        // Guard against PostgreSQL UUID syntax errors (SQLSTATE[22P02]) on invalid input/typos
+        if (! Str::isUuid($code)) {
+            return [
+                'ok' => false,
+                'status' => 'not_found',
+                'message' => 'Format kode tiket tidak valid atau tiket tidak terdaftar di sistem.',
+            ];
+        }
+
+        // If a signature is provided, verify it immediately
+        if ($signature !== null && ! \App\Models\Ticket::verifySignature($code, $signature)) {
+            return [
+                'ok' => false,
+                'status' => 'forged',
+                'message' => 'PERINGATAN: Tanda tangan digital tiket tidak cocok! Kemungkinan tiket palsu / dimodifikasi.',
+            ];
+        }
+
+        return DB::transaction(function () use ($code, $expectedEventId) {
+            /** @var \App\Models\Ticket|null $ticket */
+            $ticket = \App\Models\Ticket::where('code', $code)
+                ->with(['orderItem.order.user', 'orderItem.ticketCategory.event'])
+                ->lockForUpdate()
+                ->first();
+
+            if (! $ticket) {
+                return [
+                    'ok' => false,
+                    'status' => 'not_found',
+                    'message' => 'Tiket tidak ditemukan dalam sistem database.',
+                ];
+            }
+
+            $order = $ticket->orderItem?->order;
+            if (! $order || $order->status !== 'paid') {
+                return [
+                    'ok' => false,
+                    'status' => 'unpaid',
+                    'message' => 'Tiket ini berasal dari pesanan yang belum lunas atau telah kedaluwarsa.',
+                ];
+            }
+
+            $event = $ticket->orderItem?->ticketCategory?->event;
+            if ($expectedEventId !== null && (int) $event?->id !== (int) $expectedEventId) {
+                return [
+                    'ok' => false,
+                    'status' => 'wrong_event',
+                    'message' => 'Tiket ini terdaftar untuk acara konser yang berbeda.',
+                    'ticket' => $ticket,
+                ];
+            }
+
+            // Check Gate System Active & Start-Time Window Lock
+            $gateConfig = $this->getGateConfig($event?->id ?? $expectedEventId);
+
+            if (! $gateConfig['system_active']) {
+                return [
+                    'ok' => false,
+                    'status' => 'gate_closed',
+                    'message' => 'SISTEM SCAN DIKUNCI: Pemindaian pintu masuk untuk event ini sedang dimatikan sementara oleh Admin.',
+                    'ticket' => $ticket,
+                ];
+            }
+
+            $startTime = $event?->start_time ?? $ticket->orderItem?->event_start_time;
+
+            if ($gateConfig['time_lock_enabled'] && $startTime) {
+                $hoursBefore = (int) $gateConfig['hours_before_start'];
+                $openGateTime = $startTime->copy()->subHours($hoursBefore);
+
+                if (now()->lt($openGateTime)) {
+                    $openStr = $openGateTime->format('d M Y H:i') . ' WIB';
+                    $startStr = $startTime->format('d M Y H:i') . ' WIB';
+                    return [
+                        'ok' => false,
+                        'status' => 'too_early',
+                        'message' => "BELUM WAKTUNYA SCAN: Gate baru dibuka mulai {$openStr} ({$hoursBefore} jam sebelum jadwal konser {$startStr}).",
+                        'ticket' => $ticket,
+                    ];
+                }
+            }
+
+            if ($ticket->status === 'used' || $ticket->checked_in_at !== null) {
+                $time = $ticket->checked_in_at ? $ticket->checked_in_at->format('H:i:s') . ' WIB' : 'sebelumnya';
+                return [
+                    'ok' => false,
+                    'status' => 'already_used',
+                    'message' => "PERINGATAN: Tiket sudah digunakan untuk check-in pada pukul {$time}!",
+                    'ticket' => $ticket,
+                ];
+            }
+
+            // Mark ticket as checked-in
+            $ticket->update([
+                'status' => 'used',
+                'checked_in_at' => now(),
+            ]);
+
+            return [
+                'ok' => true,
+                'status' => 'valid',
+                'message' => 'Check-in berhasil! Tiket valid.',
+                'ticket' => $ticket,
+            ];
+        }, 3);
+    }
+
     private function isOnSale(?Event $event): bool
     {
         return $event && ! $event->trashed() && $event->status === 'published' && $event->start_time->isFuture();

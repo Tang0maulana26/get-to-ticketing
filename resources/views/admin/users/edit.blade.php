@@ -1,13 +1,13 @@
 {{-- Admin edit user and role form. --}}
-<x-layout title="Edit Pengguna" :admin="true">
+<x-layout :title="__('Edit User')" :admin="true">
     <section class="shell page-space">
-        <a class="back-link" href="{{ route('admin.users.index') }}">← Daftar Pengguna</a>
+        <a class="back-link" href="{{ route('admin.users.index') }}">← {{ __('User List') }}</a>
 
         <div class="section-heading">
             <div>
                 <p class="eyebrow">USER PROFILE & PERMISSIONS</p>
-                <h1>Edit Data Pengguna.</h1>
-                <p class="muted">Perbarui data kontak, kata sandi, dan peran hak akses pengguna.</p>
+                <h1>{{ __('Edit User Data.') }}</h1>
+                <p class="muted">{{ __('Update user contact info, password, and system role permissions.') }}</p>
             </div>
         </div>
 
@@ -16,21 +16,21 @@
             @method('PUT')
 
             <div class="panel">
-                <h2>Identitas Akun</h2>
+                <h2>{{ __('Account Identity') }}</h2>
 
-                <x-field label="Nama Lengkap" 
+                <x-field :label="__('Full name')" 
                          name="name" 
                          :value="$user->name" 
                          required 
                          maxlength="100" />
 
-                <x-field label="Username (Panggilan unik)" 
+                <x-field :label="__('Username (unique handle for login)')" 
                          name="username" 
                          :value="$user->username" 
                          required 
                          maxlength="50" />
 
-                <x-field label="Alamat Email" 
+                <x-field :label="__('Email Address')" 
                          name="email" 
                          type="email" 
                          :value="$user->email" 
@@ -38,63 +38,62 @@
                          maxlength="255" />
 
                 <label class="field">
-                    <span>Peran Akses (Role)</span>
+                    <span>{{ __('Access Role') }}</span>
                     <select name="role" @disabled(auth()->id() === $user->id)>
                         <option value="customer" @selected(old('role', $user->role) === 'customer')>
-                            Pelanggan (Customer) — Pemesanan tiket, riwayat akun
+                            {{ __('Customer — Ticket bookings, order history') }}
                         </option>
                         <option value="admin" @selected(old('role', $user->role) === 'admin')>
-                            Admin — Akses penuh ke dashboard, event, diskon & pengguna
+                            {{ __('Admin — Full access to dashboard, events, discounts & users') }}
                         </option>
                     </select>
                     @if(auth()->id() === $user->id)
                         <input type="hidden" name="role" value="admin">
-                        <small class="muted">Anda tidak dapat mengubah peran akun admin Anda sendiri.</small>
+                        <small class="muted">{{ __('You cannot change the role of your own admin account.') }}</small>
                     @else
-                        <small class="muted">Pilih 'Admin' untuk memberikan hak akses penuh ke panel pengelola.</small>
+                        <small class="muted">{{ __('Select \'Admin\' to grant full management permissions.') }}</small>
                     @endif
                 </label>
             </div>
 
             <div class="panel">
-                <h2>Ganti Kata Sandi (Opsional)</h2>
-                <p class="muted small-copy mb-4">Kosongkan jika tidak ingin mengganti kata sandi pengguna.</p>
+                <h2>{{ __('Change Password (Optional)') }}</h2>
+                <p class="muted small-copy mb-4">{{ __('Leave blank if you do not wish to change this user\'s password.') }}</p>
 
-                <label class="field">
-                    <span>Kata Sandi Baru</span>
+                <div class="field">
+                    <span>{{ __('New Password') }}</span>
                     <input type="password" name="password" minlength="10" maxlength="200" autocomplete="new-password">
-                    <small>Minimal 10 karakter, kombinasi huruf dan angka.</small>
-                </label>
+                    <small>{{ __('At least 10 characters, containing letters and numbers.') }}</small>
+                </div>
 
-                <label class="field">
-                    <span>Konfirmasi Kata Sandi Baru</span>
+                <div class="field">
+                    <span>{{ __('Confirm New Password') }}</span>
                     <input type="password" name="password_confirmation" autocomplete="new-password">
-                </label>
+                </div>
 
                 <div class="mt-6">
-                    <button class="button full" type="submit">Simpan Perubahan Pengguna →</button>
+                    <button class="button full" type="submit">{{ __('Save User Changes →') }}</button>
                 </div>
             </div>
         </form>
 
         @if($user->role === 'customer' && $user->orders_count > 0)
-            <div class="panel mt-8" style="border: 1px solid #fecaca; background: #fff5f5;">
-                <h3 style="color: #991b1b;">⚠️ Area Reset Pesanan Pelanggan Ini</h3>
+            <div class="panel panel-danger mt-8">
+                <h3>⚠️ {{ __('Reset Orders for this Customer') }}</h3>
                 <p class="muted small-copy mb-4">
-                    Pelanggan ini memiliki {{ $user->orders_count }} pesanan tercatat. Anda dapat mereset riwayat pesanan pelanggan ini tanpa menghapus akunnya.
+                    {{ __('This customer has :count recorded orders. You can reset their order history without deleting the account.', ['count' => $user->orders_count]) }}
                 </p>
-                <form action="{{ route('admin.reset.customer', $user) }}" method="post" data-confirm="Yakin ingin mereset dan menghapus seluruh riwayat pesanan pelanggan {{ $user->name }}? Stok tiket reservasi akan dikembalikan.">
+                <form action="{{ route('admin.reset.customer', $user) }}" method="post" data-confirm="{{ __('Are you sure you want to reset all order history for :name? Reserved ticket stock will be released.', ['name' => $user->name]) }}">
                     @csrf
                     <label class="field mb-4">
-                        <span>Masukkan Kata Sandi Admin Anda untuk Konfirmasi:</span>
-                        <input type="password" name="current_password" required placeholder="Kata sandi admin aktif">
+                        <span>{{ __('Enter Your Admin Password to Confirm:') }}</span>
+                        <input type="password" name="current_password" required placeholder="{{ __('Active admin password') }}">
                     </label>
-                    <button class="button secondary" style="color: #b91c1c; border-color: #f87171;" type="submit">
-                        Reset Pesanan {{ $user->name }} Saja
+                    <button class="button danger" type="submit">
+                        {{ __('Reset Orders for :name Only', ['name' => $user->name]) }}
                     </button>
                 </form>
             </div>
         @endif
     </section>
 </x-layout>
-

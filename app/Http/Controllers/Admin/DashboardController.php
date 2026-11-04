@@ -20,6 +20,8 @@ class DashboardController extends Controller
             'orderCount' => Order::count(),
             'revenue' => Order::where('status', 'paid')->sum('total'),
             'customerCount' => User::where('role', 'customer')->count(),
+            'checkedInCount' => \App\Models\Ticket::where('status', 'used')->count(),
+            'totalValidTickets' => \App\Models\Ticket::count(),
             'orders' => Order::with(['user', 'items'])->latest()->paginate(10),
         ]);
     }

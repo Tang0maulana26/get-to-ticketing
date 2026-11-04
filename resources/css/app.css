@@ -494,6 +494,17 @@ small {
     background: #fee2e2;
 }
 
+.dark .button.danger {
+    background: rgba(127, 29, 29, 0.25);
+    color: #fca5a5;
+    border-color: #7f1d1d;
+}
+
+.dark .button.danger:hover {
+    background: rgba(127, 29, 29, 0.4);
+    color: #fecaca;
+}
+
 .text-link {
     color: var(--strong);
     text-decoration: underline;
@@ -1545,6 +1556,27 @@ small {
     padding: 26px;
 }
 
+.panel.panel-danger {
+    border-color: #fca5a5;
+    background: #fff5f5;
+    max-width: 680px;
+    margin-inline: auto;
+}
+
+.panel.panel-danger h3 {
+    color: #991b1b;
+    margin-bottom: 6px;
+}
+
+.dark .panel.panel-danger {
+    border-color: #7f1d1d;
+    background: rgba(127, 29, 29, 0.15);
+}
+
+.dark .panel.panel-danger h3 {
+    color: #f87171;
+}
+
 .order-line {
     display: flex;
     align-items: center;
@@ -1607,6 +1639,13 @@ small {
     gap: 20px;
 }
 
+.issued-ticket-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .issued-ticket h3 {
     margin: 8px 0;
 }
@@ -1620,6 +1659,178 @@ small {
 
 .issued-ticket p {
     font-size: 12px;
+}
+
+/* ==========================================================================
+   Mobile-First Digital QR Admission Pass
+   ========================================================================== */
+.mobile-pass-card {
+    text-align: center;
+    padding: 4px 6px 12px;
+}
+
+.pass-header {
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+}
+
+.pass-badge {
+    display: inline-block;
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.pass-event {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: var(--ink);
+}
+
+.pass-venue {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.pass-qr-wrapper {
+    position: relative;
+    display: inline-block;
+    padding: 14px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 2px solid var(--line);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+
+.pass-qr-img {
+    display: block;
+    width: 200px;
+    height: 200px;
+    max-width: 100%;
+}
+
+.pass-scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #0284c7, #38bdf8, transparent);
+    box-shadow: 0 0 8px #38bdf8;
+    top: 0;
+    animation: passScanAnim 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes passScanAnim {
+    0% {
+        top: 8px;
+    }
+    100% {
+        top: calc(100% - 10px);
+    }
+}
+
+.pass-code-pill {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 14px;
+}
+
+.pass-code-label {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.pass-code-val {
+    font-family: var(--font-mono, monospace);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--strong);
+    letter-spacing: 0.05em;
+    user-select: all;
+}
+
+.pass-security-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #059669;
+    margin-bottom: 16px;
+}
+
+.dark .pass-security-indicator {
+    color: #34d399;
+}
+
+.live-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: livePulseAnim 1.6s infinite;
+}
+
+@keyframes livePulseAnim {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.pass-holder-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+    margin-bottom: 12px;
+    text-align: left;
+    font-size: 12.5px;
+}
+
+.pass-holder-info small {
+    display: block;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.pass-warning-note {
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--muted);
+    text-align: left;
 }
 
 .pagination {
@@ -1640,6 +1851,25 @@ small {
     gap: 30px;
     padding-block: 14px;
     font-size: 12px;
+}
+
+.admin-nav a {
+    color: var(--muted);
+    font-weight: 500;
+    transition: color 0.15s;
+}
+
+.admin-nav a:hover {
+    color: var(--ink);
+}
+
+.admin-nav a.selected {
+    color: var(--strong);
+    font-weight: 700;
+}
+
+.dark .admin-nav a.selected {
+    color: var(--blue);
 }
 
 .admin-nav .eyebrow {
@@ -1766,6 +1996,47 @@ td small {
     aspect-ratio: 1.5;
     object-fit: cover;
     border-radius: 6px;
+}
+
+/* Admin Danger / Reset Cards */
+.admin-card-safe {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.admin-card-safe strong {
+    color: #166534;
+}
+
+.dark .admin-card-safe {
+    background: rgba(22, 101, 52, 0.15);
+    border-color: #166534;
+}
+
+.dark .admin-card-safe strong {
+    color: #86efac;
+}
+
+.admin-card-danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.admin-card-danger strong {
+    color: #991b1b;
+}
+
+.dark .admin-card-danger {
+    background: rgba(127, 29, 29, 0.15);
+    border-color: #7f1d1d;
+}
+
+.dark .admin-card-danger strong {
+    color: #fca5a5;
 }
 
 .modal {
@@ -2008,10 +2279,15 @@ td small {
     line-height: 1.5;
 }
 
-.issued-ticket {
+    .issued-ticket {
         padding: 18px;
         flex-direction: column;
         align-items: flex-start;
+        gap: 14px;
+    }
+    .issued-ticket-actions {
+        width: 100%;
+        justify-content: space-between;
     }
     .stat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));

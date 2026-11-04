@@ -1,4 +1,4 @@
-﻿# Aturan kerja Get to Ticketing
+# Aturan kerja Get to Ticketing
 
 Dokumen ini adalah acuan untuk agen coding di proyek Laravel ini. Jelaskan keputusan dan hasil kepada pemilik proyek dalam bahasa Indonesia yang mudah dipahami. Baca kode yang relevan sebelum mengubahnya; jangan menganggap rencana sebagai fitur yang sudah selesai.
 
@@ -14,17 +14,21 @@ Dokumen ini adalah acuan untuk agen coding di proyek Laravel ini. Jelaskan keput
 - Katalog, filter kategori, detail event dengan gambar dan deskripsi, login/register, pemesanan, riwayat tiket, pembayaran demo lokal, serta CRUD event dan kategori tiket admin sudah ada di kode. Admin juga memiliki ringkasan pelanggan sederhana.
 - `app/Services/BookingService.php` menangani transaksi pemesanan, penguncian stok, idempotensi, pembatalan/kedaluwarsa, dan penerbitan tiket setelah pembayaran demo. `routes/console.php` menjadwalkan kedaluwarsa pesanan. Jangan menghapus pengaman stok saat mengubah alur checkout.
 - Model berada di `app/Models`, validasi di `app/Http/Requests`, otorisasi di `app/Policies` dan middleware, controller di `app/Http/Controllers`, skema di `database/migrations`, antarmuka Blade di `resources/views`, dan aset di `resources/css` serta `resources/js`.
-- Hasil pengujian terakhir yang tercatat: 23 tes lulus, 97 assertion (`storage/logs/test-results.json`). Itu adalah hasil saat dicatat, bukan jaminan bahwa perubahan berikutnya sudah lolos.
-- Belum siap produksi: pembayaran masih demo, seat map/QR check-in belum dibuat, dukungan film belum dibuat, pemeriksaan browser/admin dan responsif belum lengkap, dokumentasi setup dan `.env.example` perlu diselaraskan, dan deployment/cloud database belum dikerjakan.
+- Gate Check-In & Scanner mendukung kamera HP/laptop, alat PDA scanner fisik, verifikasi HMAC anti-pemalsuan, serta mode offline penuh dengan auto-sync 2 arah antar-perangkat panitia.
+- Hasil pengujian terakhir yang tercatat: 81 tes lulus, 371 assertion.
 
 ## Aturan implementasi
 
 - Ikuti pola Laravel: route tipis, Form Request untuk validasi, policy/middleware untuk otorisasi, dan service untuk aturan bisnis yang dipakai lintas controller. Pertahankan nama dan struktur kode yang konsisten.
-- Setiap checkout, perubahan stok, pembatalan, dan penyelesaian pembayaran harus aman terhadap permintaan bersamaan. Gunakan transaksi database dan penguncian baris yang relevan; jangan mengurangi stok hanya di frontend.
+- Setiap checkout, perubahan stok, pembatalan, penyelesaian pembayaran, dan check-in gate harus aman terhadap permintaan bersamaan. Gunakan transaksi database dan penguncian baris (`lockForUpdate`); jangan mengurangi stok atau memvalidasi tiket hanya di frontend.
 - Simpan harga sebagai bilangan bulat rupiah. Pertahankan snapshot harga/nama item pesanan agar riwayat tidak berubah ketika admin mengedit kategori tiket. Lindungi stok yang sudah terjual saat admin mengubah kapasitas atau menghapus tiket.
 - Jenis acara dibuat modular melalui kategori dan field event yang umum. Tambahkan detail khusus jenis acara hanya saat ada kebutuhan nyata; jangan mewajibkan atribut film pada event konser.
 - Gunakan komponen Blade yang dapat dipakai ulang untuk elemen visual berulang. Tampilkan pesan validasi dan status pesanan yang jelas. Jaga aksesibilitas dasar, responsivitas, dan performa; hindari animasi atau dependensi berat tanpa alasan.
+- Jangan menaruh ekspresi Blade `{{ ... }}` di tengah nilai properti CSS inline seperti `style="display: {{ ... }};"`. Gunakan direktif Blade `@if / @else` yang membungkus nilai CSS valid utuh, atau direktif `@style([...])` agar bebas dari error parser linter editor.
+- Seluruh teks antarmuka wajib mendukung dwibahasa (ID & EN) melalui `{{ __('...') }}` yang diselaraskan di `lang/id.json` dan `lang/en.json`. Untuk komponen interaktif frontend, kirimkan kamus terjemahan melalui atribut `data-i18n` agar pesan status dan alert JavaScript otomatis mengikuti bahasa aktif.
 - Pertahankan escaping Blade, CSRF, pembatasan request sensitif, pemeriksaan hak akses, validasi unggahan, dan security headers. Jangan menampilkan kredensial atau mengaktifkan pembayaran demo pada produksi.
+- CSP & Hardware Permissions: Jika menggunakan fitur perangkat keras (seperti kamera scanner), pastikan `Permissions-Policy: camera=(self)` dan `media-src 'self' blob:` diizinkan di `SecurityHeaders.php`. Seluruh library operasional (seperti `jsqr.min.js`) wajib di-host lokal di `public/` agar mematuhi aturan CSP `script-src 'self'` dan dapat bekerja 100% offline tanpa internet luar.
+- Otorisasi Gate: Konfigurasi sistem gate (saklar buka/tutup sistem dan jendela waktu scan `start_time`) dibatasi hanya untuk `admin`. Peran `gate_staff` dibatasi untuk operasi operasional scan dan sinkronisasi antrean tiket.
 
 ## Database dan data lokal
 

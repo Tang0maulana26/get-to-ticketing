@@ -6,6 +6,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="{{ __('The Get To — find events, pick tickets, and make moments you want to repeat.') }}">
     <title>{{ $title }} · The Get To</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -49,7 +50,6 @@
                        aria-label="Ganti ke Bahasa Indonesia">ID</a>
                 </div>
 
-                @unless($admin)
                 <button class="icon-button" type="button" data-theme-toggle aria-label="{{ __('Toggle theme mode') }}" title="{{ __('Toggle theme mode') }}">
                     <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="5"></circle>
@@ -66,7 +66,6 @@
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
-                @endunless
 
                 @auth
                 <a class="nav-login {{ request()->routeIs('profile.*') ? 'selected' : '' }}" href="{{ route('profile.edit') }}">
@@ -97,10 +96,16 @@
             <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'selected' : '' }}">
                 {{ __('Events & tickets') }}
             </a>
+            <a href="{{ route('admin.customers') }}" class="{{ request()->routeIs('admin.customers') ? 'selected' : '' }}">
+                {{ __('Customers') }}
+            </a>
             <a href="{{ route('admin.discounts.index') }}" class="{{ request()->routeIs('admin.discounts.*') ? 'selected' : '' }}">
                 {{ __('Discount codes') }}
             </a>
-            <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*', 'admin.customers') ? 'selected' : '' }}">
+            <a href="{{ route('gate.scan') }}" class="{{ request()->routeIs('gate.scan') ? 'selected' : '' }}">
+                {{ __('Gate scanner') }}
+            </a>
+            <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'selected' : '' }}">
                 {{ __('Users & roles') }}
             </a>
             <a href="{{ route('admin.reset.index') }}" class="{{ request()->routeIs('admin.reset.*') ? 'selected' : '' }}" style="color: #b91c1c;">
