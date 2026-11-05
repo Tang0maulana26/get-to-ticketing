@@ -115,6 +115,8 @@
     const resultIcon = document.getElementById('result-icon');
     const resultTitle = document.getElementById('result-title');
     const resultSubtitle = document.getElementById('result-subtitle');
+    const resultErrorBox = document.getElementById('result-error-box');
+    const resErrorCode = document.getElementById('res-error-code');
     const resultDetails = document.getElementById('result-details');
     const resHolder = document.getElementById('res-holder');
     const resCategory = document.getElementById('res-category');
@@ -126,7 +128,20 @@
     // History & Manifest Table DOM Elements
     const historyTableBody = document.getElementById('history-table-body');
     const historyCount = document.getElementById('history-count');
+    const togglePersistHistory = document.getElementById('toggle-persist-history');
+    const btnClearHistory = document.getElementById('btn-clear-history');
     const manifestTicketsBody = document.getElementById('manifest-tickets-body');
+
+    // 2-Step Confirmation Modal Elements
+    const gateConfirmModal = document.getElementById('gate-confirm-modal');
+    const modalAttendeeName = document.getElementById('modal-attendee-name');
+    const modalTicketTier = document.getElementById('modal-ticket-tier');
+    const modalTicketCode = document.getElementById('modal-ticket-code');
+    const modalUsedWarning = document.getElementById('modal-used-warning');
+    const btnModalCancel = document.getElementById('btn-modal-cancel');
+    const btnModalConfirm = document.getElementById('btn-modal-confirm');
+    let pendingConfirmPayload = null;
+    let persistHistoryEnabled = false;
 
     // =========================================================================
     // 1. Web Audio Synthesizer (Zero MP3 Asset Dependency)
@@ -167,7 +182,7 @@
     if (btnToggleSound) {
         btnToggleSound.addEventListener('click', function () {
             soundEnabled = !soundEnabled;
-            btnToggleSound.textContent = soundEnabled ? '🔊 ' + t('sound_on', 'Sound: On') : '🔇 ' + t('sound_off', 'Sound: Off');
+            btnToggleSound.textContent = soundEnabled ? t('sound_on', 'Sound: On') : t('sound_off', 'Sound: Off');
             if (soundEnabled) playFeedbackSound(true);
         });
     }
@@ -198,13 +213,13 @@
         }
         if (gateRuleStatusText) {
             if (!sysActive) {
-                gateRuleStatusText.textContent = t('rule_status_locked', '🔴 Gate Locked (Scanning Disabled)');
+                gateRuleStatusText.textContent = t('rule_status_locked', 'Gate Locked (Scanning Disabled)');
                 gateRuleStatusText.style.color = '#dc2626';
             } else if (lockEnabled) {
-                gateRuleStatusText.textContent = t('rule_status_time', '📅 Active from H-:hours Hours Before Event', { ':hours': hours });
+                gateRuleStatusText.textContent = t('rule_status_time', 'Active from H-:hours Hours Before Event', { ':hours': hours });
                 gateRuleStatusText.style.color = '#0284c7';
             } else {
-                gateRuleStatusText.textContent = t('rule_status_free', '🟢 Free (Anytime Scan)');
+                gateRuleStatusText.textContent = t('rule_status_free', 'Free (Anytime Scan)');
                 gateRuleStatusText.style.color = '#059669';
             }
         }
@@ -235,7 +250,7 @@
             }
 
             btnSaveGateSettings.disabled = true;
-            btnSaveGateSettings.textContent = '⏳ ' + t('loading', 'Saving...');
+            btnSaveGateSettings.textContent = t('loading', 'Saving...');
 
             // Save in local manifest immediately so offline scanning respects it
             if (eventId) {
@@ -277,7 +292,7 @@
                     applyGateConfigToControls(data.gate_config);
                     showResultState(
                         sysActive ? 'success' : 'caution',
-                        sysActive ? t('rule_saved_title', '⚙️ GATE RULES SAVED') : t('rule_locked_title', '🔒 GATE SCANNING DISABLED'),
+                        sysActive ? t('rule_saved_title', 'GATE RULES SAVED') : t('rule_locked_title', 'GATE SCANNING DISABLED'),
                         data.message,
                         null,
                         false
@@ -287,14 +302,14 @@
             } catch (err) {
                 showResultState(
                     'caution',
-                    t('rule_saved_offline', '⚙️ RULES SAVED LOCALLY (OFFLINE)'),
+                    t('rule_saved_offline', 'RULES SAVED LOCALLY (OFFLINE)'),
                     t('rule_offline_msg', 'Gate rule applied locally and will sync once online.'),
                     null,
                     true
                 );
             } finally {
                 btnSaveGateSettings.disabled = false;
-                btnSaveGateSettings.textContent = '💾 ' + t('save_rule', 'Save Rule');
+                btnSaveGateSettings.textContent = t('save_rule', 'Save Rule');
             }
         });
     }
@@ -424,26 +439,43 @@
         }
 
         let html = '';
-        tickets.slice(0, 50).forEach((tItem) => {
+        tickets.slice(0, 100).forEach((tItem) => {
             const isUsed = tItem.status === 'used';
             const badgeBg = isUsed ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)';
             const badgeColor = isUsed ? '#dc2626' : '#059669';
             const statusLabel = isUsed ? t('admitted', 'ADMITTED') : t('not_admitted', 'NOT ADMITTED');
             const fullPayload = tItem.signature ? `${tItem.code}.${tItem.signature}` : tItem.code;
+            const shortCode = tItem.code && tItem.code.length > 12
+                ? `${tItem.code.slice(0, 8)}…${tItem.code.slice(-4)}`
+                : (tItem.code || '-');
+            const attendeeName = tItem.holder || t('attendee_fallback', 'Attendee');
 
             html += `
                 <tr style="border-bottom: 1px solid var(--line);">
-                    <td style="padding: 0.55rem 0.65rem; font-family: monospace; font-weight: 600;">${escapeHtml(tItem.code)}</td>
-                    <td style="padding: 0.55rem 0.65rem;">${escapeHtml(tItem.holder || t('attendee_fallback', 'Attendee'))}</td>
-                    <td style="padding: 0.55rem 0.65rem;">${escapeHtml(tItem.ticket_name || '-')}</td>
+                    <td style="padding: 0.55rem 0.65rem;">
+                        <strong style="color: var(--ink); font-size: 0.88rem; display: block;">${escapeHtml(attendeeName)}</strong>
+                    </td>
+                    <td style="padding: 0.55rem 0.65rem;">
+                        <code title="${escapeHtml(tItem.code)}" style="font-family: monospace; font-size: 0.78rem; background: var(--surface); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--strong); cursor: help;">
+                            ${escapeHtml(shortCode)}
+                        </code>
+                    </td>
+                    <td style="padding: 0.55rem 0.65rem; font-size: 0.82rem; color: var(--muted);">${escapeHtml(tItem.ticket_name || '-')}</td>
                     <td style="padding: 0.55rem 0.65rem;">
                         <span style="background: ${badgeBg}; color: ${badgeColor}; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; font-size: 0.72rem;">
                             ${escapeHtml(statusLabel)}
                         </span>
                     </td>
                     <td style="padding: 0.55rem 0.65rem; text-align: right;">
-                        <button type="button" class="button secondary small" data-quick-scan="${escapeHtml(fullPayload)}" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
-                            ${escapeHtml(t('scan_this', '⚡ Scan This Ticket'))}
+                        <button type="button" 
+                                class="button secondary small btn-trigger-confirm-scan" 
+                                data-code="${escapeHtml(fullPayload)}" 
+                                data-raw-code="${escapeHtml(tItem.code)}"
+                                data-holder="${escapeHtml(attendeeName)}" 
+                                data-category="${escapeHtml(tItem.ticket_name || '-')}" 
+                                data-status="${escapeHtml(tItem.status)}" 
+                                style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">
+                            ${escapeHtml(t('scan_this', 'Scan This Ticket →'))}
                         </button>
                     </td>
                 </tr>
@@ -452,11 +484,56 @@
         manifestTicketsBody.innerHTML = html;
     }
 
-    // Delegate click on quick scan buttons in manifest table
+    // 2-Step Confirmation Modal Handlers for Quick Action
+    function closeConfirmModal() {
+        pendingConfirmPayload = null;
+        if (gateConfirmModal) {
+            gateConfirmModal.style.display = 'none';
+        }
+    }
+
     document.addEventListener('click', function (e) {
-        const btn = e.target.closest('[data-quick-scan]');
+        const btn = e.target.closest('.btn-trigger-confirm-scan');
         if (!btn) return;
-        const payload = btn.getAttribute('data-quick-scan');
+        const code = btn.getAttribute('data-code');
+        const rawCode = btn.getAttribute('data-raw-code') || '';
+        const holder = btn.getAttribute('data-holder') || '-';
+        const category = btn.getAttribute('data-category') || '-';
+        const status = btn.getAttribute('data-status') || '';
+
+        pendingConfirmPayload = code;
+        if (modalAttendeeName) modalAttendeeName.textContent = holder;
+        if (modalTicketTier) modalTicketTier.textContent = category;
+        if (modalTicketCode) {
+            const short = rawCode.length > 12 ? `${rawCode.slice(0, 8)}…${rawCode.slice(-4)}` : rawCode;
+            modalTicketCode.textContent = short;
+            modalTicketCode.title = rawCode;
+        }
+        if (modalUsedWarning) {
+            modalUsedWarning.style.display = status === 'used' ? 'block' : 'none';
+        }
+        if (gateConfirmModal) {
+            gateConfirmModal.style.display = 'flex';
+        }
+    });
+
+    btnModalCancel?.addEventListener('click', closeConfirmModal);
+
+    gateConfirmModal?.addEventListener('click', function (e) {
+        if (e.target === gateConfirmModal) {
+            closeConfirmModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && gateConfirmModal?.style.display === 'flex') {
+            closeConfirmModal();
+        }
+    });
+
+    btnModalConfirm?.addEventListener('click', function () {
+        const payload = pendingConfirmPayload;
+        closeConfirmModal();
         if (payload) {
             processScannedCode(payload, true);
             resultCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -472,7 +549,7 @@
 
         if (btnDownloadManifest && !silent) {
             btnDownloadManifest.disabled = true;
-            btnDownloadManifest.textContent = t('downloading', '⏳ Downloading...');
+            btnDownloadManifest.textContent = t('downloading', 'Downloading...');
         }
 
         try {
@@ -502,7 +579,7 @@
             if (!silent) {
                 showResultState(
                     'success',
-                    t('manifest_success_title', '📥 MANIFEST READY (:count TICKETS)', { ':count': data.total_tickets }),
+                    t('manifest_success_title', 'MANIFEST READY (:count TICKETS)', { ':count': data.total_tickets }),
                     t('manifest_success_msg', 'Ticket data and schedule for ":title" stored in browser. Devices will sync automatically!', { ':title': data.event_title }),
                     null,
                     false
@@ -513,7 +590,7 @@
             if (!silent) {
                 showResultState(
                     'warning',
-                    t('manifest_fail_title', '❌ FAILED TO DOWNLOAD MANIFEST'),
+                    t('manifest_fail_title', 'FAILED TO DOWNLOAD MANIFEST'),
                     t('manifest_fail_msg', 'Ensure connection to server is active when downloading manifest: :error', { ':error': err.message }),
                     null,
                     false
@@ -522,7 +599,7 @@
         } finally {
             if (btnDownloadManifest) {
                 btnDownloadManifest.disabled = false;
-                btnDownloadManifest.textContent = '📥 ' + t('download_manifest', 'Download Offline Manifest');
+                btnDownloadManifest.textContent = t('download_manifest', 'Download Offline Manifest') + ' ⤓';
             }
         }
     }
@@ -644,6 +721,7 @@
 
     if (eventSelect) {
         eventSelect.addEventListener('change', function () {
+            restoreHistoryForEvent(this.value);
             refreshManifestDisplay();
             if (navigator.onLine) {
                 downloadManifest(true);
@@ -661,10 +739,9 @@
     // =========================================================================
     // 4. Camera WebRTC & QR Code Frame Scanner
     // =========================================================================
-    function setCameraOverlay(visible, icon, title, subtitle, showRetryBtn = true) {
+    function setCameraOverlay(visible, _icon, title, subtitle, showRetryBtn = true) {
         if (!cameraStatusOverlay) return;
         cameraStatusOverlay.style.display = visible ? 'flex' : 'none';
-        if (cameraStatusIcon) cameraStatusIcon.textContent = icon;
         if (cameraStatusText) cameraStatusText.textContent = title;
         if (cameraStatusSub) cameraStatusSub.textContent = subtitle;
         if (btnStartCamOverlay) btnStartCamOverlay.style.display = showRetryBtn ? 'inline-flex' : 'none';
@@ -730,7 +807,7 @@
             await videoEl.play();
 
             isCameraActive = true;
-            if (btnToggleCam) btnToggleCam.textContent = t('camera_off', '⏹ Turn Off Camera');
+            if (btnToggleCam) btnToggleCam.textContent = t('camera_off', 'Turn Off Camera');
             setCameraOverlay(false, '', '', '', false);
 
             const videoTrack = currentStream.getVideoTracks()[0];
@@ -742,7 +819,7 @@
             scanLoopId = requestAnimationFrame(scanVideoFrame);
         } catch (err) {
             isCameraActive = false;
-            if (btnToggleCam) btnToggleCam.textContent = t('camera_on', '📷 Turn On Camera');
+            if (btnToggleCam) btnToggleCam.textContent = t('camera_on', 'Turn On Camera');
 
             let msgTitle = t('camera_not_active', 'Camera Inactive');
             let msgSub = t('camera_not_active_sub', 'Click the button below to turn on the QR camera scanner.');
@@ -758,7 +835,7 @@
                 msgSub = t('camera_in_use_sub', 'Close any other application using the camera (Zoom/Meet/other tab), then try again.');
             }
 
-            setCameraOverlay(true, '📷', msgTitle, msgSub, true);
+            setCameraOverlay(true, '', msgTitle, msgSub, true);
         }
     }
 
@@ -775,7 +852,7 @@
             videoEl.srcObject = null;
         }
         isCameraActive = false;
-        if (btnToggleCam) btnToggleCam.textContent = t('camera_on', '📷 Turn On Camera');
+        if (btnToggleCam) btnToggleCam.textContent = t('camera_on', 'Turn On Camera');
 
         if (showOverlay) {
             setCameraOverlay(
@@ -969,7 +1046,22 @@
                 });
                 clearTimeout(timeoutId);
 
-                const data = await resp.json();
+                let data = {};
+                try {
+                    data = await resp.json();
+                } catch (_) {
+                    data = {};
+                }
+
+                // Guard against unexpected server 500 or raw framework validation payloads
+                if (resp.status >= 500 || typeof data.ok !== 'boolean') {
+                    data = {
+                        ok: false,
+                        status: 'not_found',
+                        message: t('invalid_msg', 'Ticket code was not found in the system.'),
+                    };
+                }
+
                 handleCheckInResponse(data, false);
 
                 if (data.ok && data.ticket) {
@@ -1233,19 +1325,61 @@
     // =========================================================================
     // 7. UI Result Card & Scan History
     // =========================================================================
+    function sanitizeServerMessage(msg, fallback) {
+        if (!msg || typeof msg !== 'string') return fallback;
+        const lower = msg.toLowerCase();
+        if (
+            lower.includes('sqlstate') ||
+            lower.includes('queryexception') ||
+            lower.includes('pdoexception') ||
+            lower.includes('select * from') ||
+            lower.includes('connection: pgsql') ||
+            msg.length > 260
+        ) {
+            return fallback || t('invalid_msg', 'Ticket code was not found in the system.');
+        }
+        return msg;
+    }
+
+    function cleanResultTitle(rawTitle) {
+        return String(rawTitle || '')
+            .replace(/^(?:✅|❌|⛔|⚠️|🔒|⏰|🛡️|📥|🔄|⚙️|⏳)\s*/u, '')
+            .trim();
+    }
+
     function showResultState(stateClass, title, subtitle, ticket, isOffline) {
         if (!resultCard) return;
         resultCard.className = 'card result-card ' + stateClass;
 
         if (resultIcon) {
-            if (stateClass === 'success') resultIcon.textContent = '✅';
-            else if (stateClass === 'warning') resultIcon.textContent = '⛔';
-            else if (stateClass === 'caution') resultIcon.textContent = '⚠️';
-            else resultIcon.textContent = '⏳';
+            resultIcon.className = 'result-icon-badge ' + stateClass;
+            if (stateClass === 'success') {
+                resultIcon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+            } else if (stateClass === 'warning') {
+                resultIcon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+            } else if (stateClass === 'caution') {
+                resultIcon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+            } else {
+                resultIcon.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+            }
         }
 
-        if (resultTitle) resultTitle.textContent = title;
-        if (resultSubtitle) resultSubtitle.textContent = subtitle;
+        if (resultTitle) resultTitle.textContent = cleanResultTitle(title);
+        if (resultSubtitle) {
+            resultSubtitle.textContent = sanitizeServerMessage(
+                subtitle,
+                t('invalid_msg', 'Ticket code was not found in the system.')
+            );
+        }
+
+        if (resultErrorBox && resErrorCode) {
+            if (!ticket && stateClass === 'warning' && lastScannedCode) {
+                resultErrorBox.style.display = 'flex';
+                resErrorCode.textContent = lastScannedCode;
+            } else {
+                resultErrorBox.style.display = 'none';
+            }
+        }
 
         if (resultDetails) {
             if (ticket) {
@@ -1281,18 +1415,49 @@
             .replace(/"/g, '&quot;');
     }
 
-    function addToHistory(status, name, category, code, isOk) {
-        if (!historyTableBody) return;
-        const timeStr = new Date().toLocaleTimeString();
-        scanHistory.unshift({ timeStr, status, name, category, code, isOk });
-        if (scanHistory.length > 20) scanHistory.pop();
+    function getRecentScansStorageKey(eventId) {
+        return 'gate_recent_scans_' + (eventId || 'global');
+    }
 
+    function restoreHistoryForEvent(eventId) {
+        if (!persistHistoryEnabled || !eventId) {
+            scanHistory = [];
+            renderHistoryTable();
+            return;
+        }
+        try {
+            const raw = localStorage.getItem(getRecentScansStorageKey(eventId));
+            scanHistory = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(scanHistory)) scanHistory = [];
+        } catch (_) {
+            scanHistory = [];
+        }
+        renderHistoryTable();
+    }
+
+    function renderHistoryTable() {
+        if (!historyTableBody) return;
         if (historyCount) historyCount.textContent = t('scans_count', ':count scans', { ':count': scanHistory.length });
+
+        if (scanHistory.length === 0) {
+            historyTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="padding: 1rem; text-align: center; color: var(--muted);">
+                        ${escapeHtml(t('no_scans', 'No scan activity yet.'))}
+                    </td>
+                </tr>
+            `;
+            return;
+        }
 
         let html = '';
         for (const item of scanHistory) {
             const badgeColor = item.isOk ? '#059669' : '#dc2626';
             const badgeBg = item.isOk ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+            const shortCode = item.code && item.code.length > 12
+                ? `${item.code.slice(0, 8)}…${item.code.slice(-4)}`
+                : (item.code || '-');
+
             html += `
                 <tr style="border-bottom: 1px solid var(--line);">
                     <td style="padding: 0.5rem 0.6rem; font-family: monospace;">${escapeHtml(item.timeStr)}</td>
@@ -1305,11 +1470,57 @@
                         <strong>${escapeHtml(item.name)}</strong><br>
                         <span class="muted">${escapeHtml(item.category)}</span>
                     </td>
-                    <td style="padding: 0.5rem 0.6rem; font-family: monospace;">${escapeHtml(item.code)}</td>
+                    <td style="padding: 0.5rem 0.6rem; font-family: monospace;">
+                        <code title="${escapeHtml(item.code)}" style="font-size: 0.76rem; cursor: help;">${escapeHtml(shortCode)}</code>
+                    </td>
                 </tr>
             `;
         }
         historyTableBody.innerHTML = html;
+    }
+
+    function addToHistory(status, name, category, code, isOk) {
+        if (!historyTableBody) return;
+        const timeStr = new Date().toLocaleTimeString();
+        scanHistory.unshift({ timeStr, status, name, category, code, isOk });
+        if (scanHistory.length > 30) scanHistory.pop();
+
+        if (persistHistoryEnabled && eventSelect?.value) {
+            try {
+                localStorage.setItem(getRecentScansStorageKey(eventSelect.value), JSON.stringify(scanHistory));
+            } catch (_) {}
+        }
+
+        renderHistoryTable();
+    }
+
+    if (togglePersistHistory) {
+        persistHistoryEnabled = localStorage.getItem('gate_persist_history_toggle') === '1';
+        togglePersistHistory.checked = persistHistoryEnabled;
+
+        togglePersistHistory.addEventListener('change', function () {
+            persistHistoryEnabled = this.checked;
+            localStorage.setItem('gate_persist_history_toggle', persistHistoryEnabled ? '1' : '0');
+            const eventId = eventSelect?.value;
+            if (persistHistoryEnabled && eventId) {
+                try {
+                    localStorage.setItem(getRecentScansStorageKey(eventId), JSON.stringify(scanHistory));
+                } catch (_) {}
+            } else if (!persistHistoryEnabled && eventId) {
+                localStorage.removeItem(getRecentScansStorageKey(eventId));
+            }
+        });
+    }
+
+    if (btnClearHistory) {
+        btnClearHistory.addEventListener('click', function () {
+            scanHistory = [];
+            const eventId = eventSelect?.value;
+            if (eventId) {
+                localStorage.removeItem(getRecentScansStorageKey(eventId));
+            }
+            renderHistoryTable();
+        });
     }
 
     // =========================================================================
@@ -1360,6 +1571,7 @@
     // 9. Startup & Initialization
     // =========================================================================
     updateNetworkStatus();
+    restoreHistoryForEvent(eventSelect?.value);
     refreshManifestDisplay();
 
     if (navigator.onLine && eventSelect?.value) {

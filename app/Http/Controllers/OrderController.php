@@ -22,8 +22,48 @@ class OrderController extends Controller
         // Only this customer's reservations; the scheduler handles everyone else.
         $this->bookings->expire(user: $request->user());
 
+        $tab = in_array($request->query('tab'), ['all', 'active', 'past'], true)
+            ? $request->query('tab')
+            : 'all';
+
+        $cutoff = now()->startOfDay();
+
+        $activeFilter = function ($query) use ($cutoff) {
+            $query->whereIn('status', ['paid', 'pending'])
+                ->whereHas('items', function ($q) use ($cutoff) {
+                    $q->whereNull('event_start_time')
+                        ->orWhere('event_start_time', '>=', $cutoff);
+                });
+        };
+
+        $pastFilter = function ($query) use ($cutoff) {
+            $query->where(function ($q) use ($cutoff) {
+                $q->whereIn('status', ['cancelled', 'expired'])
+                    ->orWhereDoesntHave('items', function ($itemQuery) use ($cutoff) {
+                        $itemQuery->whereNull('event_start_time')
+                            ->orWhere('event_start_time', '>=', $cutoff);
+                    });
+            });
+        };
+
+        $baseQuery = $request->user()->orders();
+        $counts = [
+            'all' => (clone $baseQuery)->count(),
+            'active' => (clone $baseQuery)->tap($activeFilter)->count(),
+            'past' => (clone $baseQuery)->tap($pastFilter)->count(),
+        ];
+
+        $ordersQuery = $request->user()->orders()->with('items');
+        if ($tab === 'active') {
+            $activeFilter($ordersQuery);
+        } elseif ($tab === 'past') {
+            $pastFilter($ordersQuery);
+        }
+
         return view('orders.index', [
-            'orders' => $request->user()->orders()->with('items')->latest()->paginate(10),
+            'orders' => $ordersQuery->latest()->paginate(10)->withQueryString(),
+            'tab' => $tab,
+            'counts' => $counts,
         ]);
     }
 
@@ -38,7 +78,7 @@ class OrderController extends Controller
         );
 
         return to_route('orders.show', $order)
-            ->with('success', 'Tiket disimpan sementara. Selesaikan pembayaran dalam '.config('ticketing.reservation_minutes').' menit.');
+            ->with('success', __('Tickets reserved temporarily. Complete payment within :minutes minutes.', ['minutes' => config('ticketing.reservation_minutes')]));
     }
 
     public function show(Order $order)
@@ -69,6 +109,6 @@ class OrderController extends Controller
         abort_unless(app()->environment('local', 'testing') && config('ticketing.demo_payments'), 403);
         $this->bookings->payDemo($order);
 
-        return to_route('orders.show', $order)->with('success', 'Simulasi pembayaran berhasil. Tiket demo kamu sudah terbit.');
+        return to_route('orders.show', $order)->with('success', 'Pembayaran berhasil dikonfirmasi. E-Ticket kamu sudah terbit.');
     }
 }

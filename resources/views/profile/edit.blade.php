@@ -3,9 +3,8 @@
     <section class="shell page-space">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">ACCOUNT SETTINGS</p>
-                <h1>{{ __('Account Profile.') }}</h1>
-                <p class="muted">{{ __('Manage your contact identity, username, and account password.') }}</p>
+                <h1>{{ __('Account Profile') }}</h1>
+                <p class="muted">{{ __('Manage your contact identity, username, and account password') }}</p>
             </div>
             <div>
                 <span class="badge {{ $user->isAdmin() ? 'badge-published' : 'badge-draft' }}">
@@ -115,7 +114,7 @@
         </form>
 
         <div class="panel panel-danger mt-8">
-            <h3>🗑️ {{ __('Delete My Account & Personal Data') }}</h3>
+            <h3>{{ __('Delete My Account & Personal Data') }}</h3>
             <p class="muted small-copy mb-4">
                 {{ __('Under the Right to be Forgotten, you may permanently delete your account. All your personal data, tickets, and order history will be removed from the system.') }}
             </p>

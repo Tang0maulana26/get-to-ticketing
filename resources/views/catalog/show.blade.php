@@ -58,14 +58,23 @@
             </div>
 
             <aside class="booking-panel">
-                <p class="eyebrow">YOUR WAY IN</p>
-                <h2>{{ __('Select your tickets.') }}</h2>
+                <h2>{{ __('Select your tickets') }}</h2>
                 <p class="muted">{{ __('Pick a category, choose the amount, get ready to go.') }}</p>
 
                 @if($event->start_time->isPast())
                     <div class="notice">{{ __('This event has already passed.') }}</div>
                 @else
-                    <form action="{{ route('checkout', $event) }}" method="post" data-booking-form>
+                    @php
+                        $bookingI18n = [
+                            'ticket_singular' => __('1 ticket'),
+                            'tickets_count' => __(':count tickets'),
+                            'discount_applied' => __('Discount (:code):'),
+                            'quota_exceeded' => __('Total booking (:count tickets) exceeds maximum limit of 20 tickets per order.'),
+                            'select_ticket_first' => __('Please select tickets first before applying discount.'),
+                            'invalid_discount' => __('Discount code is invalid.'),
+                        ];
+                    @endphp
+                    <form action="{{ route('checkout', $event) }}" method="post" data-booking-form data-i18n="{{ json_encode($bookingI18n) }}">
                         @csrf
                         <input type="hidden" name="checkout_key" value="{{ old('checkout_key', (string) Str::uuid()) }}">
                         <input type="hidden" name="event_id" value="{{ $event->id }}">
@@ -80,16 +89,16 @@
                                 <div class="ticket-option-bottom">
                                     <strong>Rp{{ number_format($type->price, 0, ',', '.') }}</strong>
                                     <div class="stepper">
-                                        <button type="button" data-step="-1" aria-label="Kurangi {{ $type->name }}">−</button>
+                                        <button type="button" data-step="-1" aria-label="{{ __('Decrease :name', ['name' => $type->name]) }}">−</button>
                                         <input type="number" 
                                                name="tickets[{{ $type->id }}]" 
                                                min="0" 
                                                max="{{ min($type->stock, $type->max_per_order) }}" 
                                                value="{{ old('tickets.'.$type->id, 0) }}" 
                                                data-price="{{ $type->price }}" 
-                                               aria-label="Jumlah {{ $type->name }}" 
+                                               aria-label="{{ __('Quantity of :name', ['name' => $type->name]) }}" 
                                                @disabled($type->stock === 0)>
-                                        <button type="button" data-step="1" aria-label="Tambah {{ $type->name }}">+</button>
+                                        <button type="button" data-step="1" aria-label="{{ __('Increase :name', ['name' => $type->name]) }}">+</button>
                                     </div>
                                 </div>
                                 <small>{{ __('Max. :count tickets / order', ['count' => $type->max_per_order]) }}</small>
@@ -99,24 +108,45 @@
                         @endforelse
 
                         @if($event->ticketCategories->isNotEmpty())
-                            <div class="discount-box mt-4 mb-2">
-                                <label class="field mb-1">
-                                    <span>{{ __('Have a discount code?') }}</span>
-                                    <div class="discount-input-group">
+                            <div class="discount-box">
+                                <div class="discount-header">
+                                    <label class="discount-label" for="discount-code-input">
+                                        <svg class="discount-tag-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                                        </svg>
+                                        <span>{{ __('Have a discount code?') }}</span>
+                                    </label>
+                                </div>
+                                <div class="discount-input-group">
+                                    <div class="discount-input-wrapper">
                                         <input type="text" 
                                                name="discount_code" 
                                                id="discount-code-input" 
                                                value="{{ old('discount_code') }}" 
                                                placeholder="{{ __('Enter promo code') }}" 
                                                maxlength="50" 
-                                               style="text-transform: uppercase;">
-                                        <button type="button" class="button secondary small" id="apply-discount-btn">{{ __('Apply') }}</button>
+                                               autocomplete="off"
+                                               spellcheck="false"
+                                               aria-label="{{ __('Enter promo code') }}">
+                                        <button type="button" 
+                                                class="discount-clear-btn" 
+                                                id="discount-clear-btn" 
+                                                title="{{ __('Clear promo code') }}" 
+                                                aria-label="{{ __('Clear promo code') }}"
+                                                style="display: none;">
+                                            &times;
+                                        </button>
                                     </div>
-                                    @error('discount_code')
-                                        <small class="field-error">{{ $message }}</small>
-                                    @enderror
-                                </label>
-                                <div id="discount-feedback" class="small-copy" style="display: none;"></div>
+                                    <button type="button" class="discount-apply-btn" id="apply-discount-btn">
+                                        <span class="btn-spinner" aria-hidden="true"></span>
+                                        <span class="btn-text">{{ __('Apply') }}</span>
+                                    </button>
+                                </div>
+                                @error('discount_code')
+                                    <small class="field-error">{{ $message }}</small>
+                                @enderror
+                                <div id="discount-feedback" class="discount-feedback" style="display: none;"></div>
                             </div>
 
                             <div class="booking-breakdown" id="booking-breakdown" style="display: none; border-top: 1px dashed var(--line); padding-top: 0.75rem; margin-top: 0.75rem;">

@@ -33,12 +33,14 @@ class SecurityHeaders
 
     private function contentSecurityPolicy(): string
     {
-        // `npm run dev` serves assets from another origin (e.g. http://[::1]:5173); allow it locally only.
+        // `npm run dev` serves assets from another origin (e.g. http://127.0.0.1:5173); allow it locally only.
         $vite = '';
         $viteSocket = '';
         if (app()->environment('local') && Vite::isRunningHot()) {
-            $vite = ' ' . rtrim(trim(file_get_contents(Vite::hotFile())), '/');
-            $viteSocket = ' ' . preg_replace('/^http/', 'ws', trim($vite));
+            $hotUrl = rtrim(trim(file_get_contents(Vite::hotFile())), '/');
+            $hotWs = preg_replace('/^http/', 'ws', $hotUrl);
+            $vite = " {$hotUrl} http://127.0.0.1:5173 http://localhost:5173";
+            $viteSocket = " {$hotWs} ws://127.0.0.1:5173 ws://localhost:5173";
         }
 
         return "default-src 'self'; img-src 'self' data: blob:{$vite}; media-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com{$vite}; "

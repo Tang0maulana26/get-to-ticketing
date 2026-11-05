@@ -84,7 +84,6 @@
         <!-- Bottom Banner -->
         <div class="bottom-banner">
             <div>
-                <p class="eyebrow">LESS SCROLLING. MORE LIVING.</p>
                 <h2>{{ __('The best memories are made at the event') }}</h2>
             </div>
             <a href="#events" class="button secondary">{{ __('Find your events ↗') }}</a>

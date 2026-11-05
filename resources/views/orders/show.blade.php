@@ -3,8 +3,7 @@
     <section class="shell page-space order-detail"><a class="back-link" href="{{ route('orders.index') }}">{{ __('← My tickets') }}</a>
         <div class="section-heading">
             <div>
-                <p class="eyebrow">YOUR TICKET TO A GOOD TIME</p>
-                <h1>{{ $order->status === 'paid' ? __('You\'re all set.') : __('Order details.') }}</h1>
+                <h1>{{ $order->status === 'paid' ? __('You\'re all set') : __('Order details') }}</h1>
             </div><x-status-badge :status="$order->status" />
         </div>
         <div class="panel">
@@ -42,7 +41,7 @@
                     <div class="payment-header mb-3" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <div>
                             <strong style="font-size: 14.5px; color: var(--strong); display: flex; align-items: center; gap: 6px;">
-                                <span>💳</span> {{ __('Payment Options') }}
+                                {{ __('Payment Options') }}
                             </strong>
                             <p class="muted small-copy mt-0.5">{{ __('Xendit (Virtual Account, QRIS, E-Wallet, Card)') }}</p>
                         </div>
@@ -67,7 +66,7 @@
                                         {{ __('Open Xendit Checkout ↗') }}
                                     </a>
                                     <a href="{{ route('orders.xendit.check', $order) }}" class="button secondary" style="flex: 1; text-align: center;">
-                                        🔄 {{ __('Check Payment Status') }}
+                                        {{ __('Check Payment Status') }}
                                     </a>
                                 </div>
                             </div>
@@ -110,7 +109,7 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 8px;">
                 <div>
                     <h2>{{ __('Your tickets') }}</h2>
-                    <p class="muted">{{ __('Save this ticket number. Demo environment tickets are not valid for real events.') }}</p>
+                    <p class="muted">{{ __('Save this ticket number and present the QR code at the venue entrance.') }}</p>
                     @if($order->payment_method)
                         <p class="small-copy mt-1" style="color: #059669; font-size: 12.5px; font-weight: 500;">
                             ✓ {{ __('Paid via :method', ['method' => strtoupper($order->payment_method) . ($order->payment_channel ? ' ('.$order->payment_channel.')' : '')]) }}
@@ -136,7 +135,6 @@
             @foreach($item->tickets as $ticket)
                 <article class="issued-ticket">
                     <div>
-                        <p class="eyebrow">THE GET TO / ADMIT ONE</p>
                         <h3>{{ $item->event_title }}</h3>
                         <p>{{ $item->ticket_name }} · {{ __('1 person') }}</p>
                         <code>{{ $ticket->code }}</code>
@@ -144,7 +142,7 @@
                     <div class="issued-ticket-actions">
                         <x-status-badge :status="$ticket->status" />
                         <button type="button" class="button small" data-open-modal="ticket-pass-{{ $ticket->id }}" style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
-                            <span>📱</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                             <span>{{ __('View QR Pass') }}</span>
                         </button>
                     </div>
@@ -157,8 +155,8 @@
                             <span class="pass-badge">{{ $item->ticket_name }}</span>
                             <h3 class="pass-event">{{ $item->event_title }}</h3>
                             <p class="pass-venue">
-                                📍 {{ $item->venue }}<br>
-                                🕒 {{ $item->event_start_time ? $item->event_start_time->locale(app()->getLocale())->translatedFormat('l, d F Y · H:i') : '-' }} WIB
+                                {{ $item->venue }}<br>
+                                {{ $item->event_start_time ? $item->event_start_time->locale(app()->getLocale())->translatedFormat('l, d F Y · H:i') : '-' }} WIB
                             </p>
                         </div>
 
@@ -191,7 +189,7 @@
                         </div>
 
                         <div class="pass-warning-note">
-                            🛡️ {{ __('Show this screen directly to venue staff at the gate. Screenshots or duplicate copies will be rejected by the ticket scanner.') }}
+                            {{ __('Show this screen directly to venue staff at the gate. Screenshots or duplicate copies will be rejected by the ticket scanner.') }}
                         </div>
                     </div>
                 </x-modal>

@@ -3,7 +3,6 @@
     <section class="shell page-space">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">PROMO & DISCOUNTS</p>
                 <h1>{{ __('Discount Codes.') }}</h1>
                 <p class="muted">{{ __('Manage promo codes, discount percentages, quotas, and validity.') }}</p>
             </div>

@@ -176,4 +176,34 @@ class TicketPdfAndMailTest extends TestCase
                 && $mail->order->id === $order->id;
         });
     }
+
+    public function test_my_tickets_list_hides_pdf_download_button_and_filters_active_vs_past_tabs(): void
+    {
+        $order = app(BookingService::class)->checkout(
+            $this->customer,
+            $this->event,
+            [$this->category->id => 2],
+            (string) Str::uuid()
+        );
+        app(BookingService::class)->payDemo($order);
+
+        // /my-tickets should list the order and link to orders.show, but NOT render the PDF download link
+        $response = $this->actingAs($this->customer)->get(route('orders.index'));
+        $response->assertOk()
+            ->assertSee('Indie Rock Fest 2026')
+            ->assertSee(route('orders.show', $order), false)
+            ->assertDontSee(route('orders.ticket.pdf', $order), false);
+
+        // Active tab includes the upcoming order
+        $this->actingAs($this->customer)
+            ->get(route('orders.index', ['tab' => 'active']))
+            ->assertOk()
+            ->assertSee('Indie Rock Fest 2026');
+
+        // Past tab does not include the upcoming paid order
+        $this->actingAs($this->customer)
+            ->get(route('orders.index', ['tab' => 'past']))
+            ->assertOk()
+            ->assertDontSee('Indie Rock Fest 2026');
+    }
 }

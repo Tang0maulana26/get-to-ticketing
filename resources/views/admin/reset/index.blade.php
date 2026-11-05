@@ -5,9 +5,8 @@
 
         <div class="section-heading">
             <div>
-                <p class="eyebrow">DATA MAINTENANCE & SAFETY</p>
                 <h1>{{ __('Reset Buyer Data.') }}</h1>
-                <p class="muted">{{ __('Clean test/demo transactions safely without affecting master events or admin accounts.') }}</p>
+                <p class="muted">{{ __('Clear customer transaction history safely without affecting master events or admin accounts.') }}</p>
             </div>
         </div>
 
@@ -22,7 +21,7 @@
                 <strong>{{ $ticketCount }}</strong>
             </div>
             <div class="stat-card">
-                <p>{{ __('Demo Transaction Value') }}</p>
+                <p>{{ __('Total Transaction Value') }}</p>
                 <strong>Rp{{ number_format($revenue, 0, ',', '.') }}</strong>
             </div>
             <div class="stat-card">
@@ -33,9 +32,9 @@
 
         <div class="panel panel-danger" style="border-width: 2px; max-width: 860px; margin-inline: auto;">
             <div class="mb-6">
-                <h2>{{ __('⚠️ Data Deletion Safety Guards') }}</h2>
+                <h2>{{ __('Data Deletion Safety Guards') }}</h2>
                 <p class="muted mt-2">
-                    {{ __('This feature is designed specifically to clean dummy/portfolio transactions so the system can be re-tested from a fresh state.') }}
+                    {{ __('This feature is designed to clear all order and ticket records while restoring ticket capacity to its initial state.') }}
                 </p>
             </div>
 

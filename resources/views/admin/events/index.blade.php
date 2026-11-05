@@ -3,7 +3,6 @@
     <section class="shell page-space">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">EVENT MANAGEMENT</p>
                 <h1>{{ __('Events & tickets.') }}</h1>
                 <p class="muted">{{ __('From stage idea to sold-out crowd.') }}</p>
             </div>

@@ -277,12 +277,26 @@ document.addEventListener("submit", (event) => {
 // Booking form interactivity & ticket stepper with promo discount calculation
 const booking = document.querySelector("[data-booking-form]");
 if (booking) {
+    let bookingI18n = {};
+    try {
+        bookingI18n = JSON.parse(booking.dataset.i18n || "{}");
+    } catch (_) {}
+
+    const tBooking = (key, fallback, replacements = {}) => {
+        let text = bookingI18n[key] || fallback || key;
+        for (const [k, v] of Object.entries(replacements)) {
+            text = text.replace(new RegExp(k, "g"), String(v));
+        }
+        return text;
+    };
+
     const inputs = [...booking.querySelectorAll("[data-price]")];
     const quotaAlert = booking.querySelector("[data-quota-alert]");
     const submitBtn = booking.querySelector("[data-booking-submit]");
 
     const discountInput = booking.querySelector("#discount-code-input");
     const applyDiscountBtn = booking.querySelector("#apply-discount-btn");
+    const discountClearBtn = booking.querySelector("#discount-clear-btn");
     const discountFeedback = booking.querySelector("#discount-feedback");
     const breakdownEl = booking.querySelector("#booking-breakdown");
     const breakdownSubtotal = booking.querySelector("#breakdown-subtotal");
@@ -294,6 +308,63 @@ if (booking) {
     let appliedDiscount = null;
 
     const formatRupiah = (num) => "Rp" + new Intl.NumberFormat("id-ID").format(num);
+
+    const setDiscountFeedback = (type, message) => {
+        if (!discountFeedback) return;
+        if (!message) {
+            discountFeedback.style.display = "none";
+            discountFeedback.replaceChildren();
+            return;
+        }
+
+        discountFeedback.className = `discount-feedback is-${type}`;
+        discountFeedback.style.display = "flex";
+        discountFeedback.replaceChildren();
+
+        const svgNs = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNs, "svg");
+        svg.setAttribute("width", "15");
+        svg.setAttribute("height", "15");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "2.5");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+
+        if (type === "success") {
+            const polyline = document.createElementNS(svgNs, "polyline");
+            polyline.setAttribute("points", "20 6 9 17 4 12");
+            svg.appendChild(polyline);
+        } else {
+            const circle = document.createElementNS(svgNs, "circle");
+            circle.setAttribute("cx", "12");
+            circle.setAttribute("cy", "12");
+            circle.setAttribute("r", "10");
+            const line1 = document.createElementNS(svgNs, "line");
+            line1.setAttribute("x1", "12");
+            line1.setAttribute("y1", "8");
+            line1.setAttribute("x2", "12");
+            line1.setAttribute("y2", "12");
+            const line2 = document.createElementNS(svgNs, "line");
+            line2.setAttribute("x1", "12");
+            line2.setAttribute("y1", "16");
+            line2.setAttribute("x2", "12.01");
+            line2.setAttribute("y2", "16");
+            svg.append(circle, line1, line2);
+        }
+
+        const span = document.createElement("span");
+        span.textContent = message;
+
+        discountFeedback.append(svg, span);
+    };
+
+    const syncDiscountClearBtn = () => {
+        if (!discountClearBtn || !discountInput) return;
+        discountClearBtn.style.display = discountInput.value.trim() ? "inline-flex" : "none";
+    };
 
     const syncStepperButtons = (input) => {
         const parent = input.closest(".stepper");
@@ -340,7 +411,9 @@ if (booking) {
             if (breakdownSubtotal) breakdownSubtotal.textContent = formatRupiah(total);
             if (breakdownDiscountRow) {
                 breakdownDiscountRow.style.display = "flex";
-                if (breakdownDiscountLabel) breakdownDiscountLabel.textContent = `Potongan (${appliedDiscount.code}):`;
+                if (breakdownDiscountLabel) {
+                    breakdownDiscountLabel.textContent = tBooking("discount_applied", `Potongan (${appliedDiscount.code}):`, { ":code": appliedDiscount.code });
+                }
                 if (breakdownDiscountAmount) breakdownDiscountAmount.textContent = "-" + formatRupiah(discountAmount);
             }
         } else {
@@ -355,13 +428,15 @@ if (booking) {
             totalEl.textContent = formatRupiah(finalTotal);
         }
         if (countEl) {
-            countEl.textContent = count + " tiket";
+            countEl.textContent = count === 1
+                ? tBooking("ticket_singular", "1 tiket")
+                : tBooking("tickets_count", `${count} tiket`, { ":count": count });
         }
 
         if (quotaAlert) {
             if (count > 20) {
                 quotaAlert.style.display = "block";
-                quotaAlert.textContent = `Total pemesanan (${count} tiket) melebihi batas maksimal 20 tiket per pesanan.`;
+                quotaAlert.textContent = tBooking("quota_exceeded", `Total pemesanan (${count} tiket) melebihi batas maksimal 20 tiket per pesanan.`, { ":count": count });
             } else {
                 quotaAlert.style.display = "none";
             }
@@ -377,24 +452,22 @@ if (booking) {
         const code = discountInput.value.trim().toUpperCase();
         if (!code) {
             appliedDiscount = null;
-            if (discountFeedback) {
-                discountFeedback.style.display = "none";
-                discountFeedback.textContent = "";
-            }
+            applyDiscountBtn?.classList.remove("is-applied");
+            setDiscountFeedback(null, "");
+            syncDiscountClearBtn();
             update();
             return;
         }
 
         if (currentSubtotal <= 0) {
-            if (discountFeedback) {
-                discountFeedback.style.display = "block";
-                discountFeedback.style.color = "#dc2626";
-                discountFeedback.textContent = "Pilih tiket terlebih dahulu untuk menerapkan diskon.";
-            }
+            setDiscountFeedback("error", tBooking("select_ticket_first", "Pilih tiket terlebih dahulu untuk menerapkan diskon."));
             return;
         }
 
-        if (applyDiscountBtn) applyDiscountBtn.disabled = true;
+        if (applyDiscountBtn) {
+            applyDiscountBtn.disabled = true;
+            applyDiscountBtn.classList.add("is-loading");
+        }
 
         const eventId = Number(booking.querySelector('[name="event_id"]')?.value) || undefined;
 
@@ -404,23 +477,21 @@ if (booking) {
             form: booking,
         });
 
-        if (applyDiscountBtn) applyDiscountBtn.disabled = false;
+        if (applyDiscountBtn) {
+            applyDiscountBtn.disabled = false;
+            applyDiscountBtn.classList.remove("is-loading");
+        }
 
         if (ok && data.ok) {
             appliedDiscount = data;
-            if (discountFeedback) {
-                discountFeedback.style.display = "block";
-                discountFeedback.style.color = "#059669";
-                discountFeedback.textContent = data.message;
-            }
+            applyDiscountBtn?.classList.add("is-applied");
+            setDiscountFeedback("success", data.message);
         } else {
             appliedDiscount = null;
-            if (discountFeedback) {
-                discountFeedback.style.display = "block";
-                discountFeedback.style.color = "#dc2626";
-                discountFeedback.textContent = data?.message || "Kode diskon tidak valid.";
-            }
+            applyDiscountBtn?.classList.remove("is-applied");
+            setDiscountFeedback("error", data?.message || tBooking("invalid_discount", "Kode diskon tidak valid."));
         }
+        syncDiscountClearBtn();
         update();
     };
 
@@ -431,6 +502,24 @@ if (booking) {
             checkDiscount();
         }
     });
+
+    discountInput?.addEventListener("input", () => {
+        applyDiscountBtn?.classList.remove("is-applied");
+        syncDiscountClearBtn();
+    });
+
+    discountClearBtn?.addEventListener("click", () => {
+        if (!discountInput) return;
+        discountInput.value = "";
+        syncDiscountClearBtn();
+        appliedDiscount = null;
+        applyDiscountBtn?.classList.remove("is-applied");
+        setDiscountFeedback(null, "");
+        discountInput.focus();
+        update();
+    });
+
+    syncDiscountClearBtn();
 
     booking.querySelectorAll("[data-step]").forEach((button) => {
         button.addEventListener("click", () => {

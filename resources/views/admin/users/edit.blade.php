@@ -5,7 +5,6 @@
 
         <div class="section-heading">
             <div>
-                <p class="eyebrow">USER PROFILE & PERMISSIONS</p>
                 <h1>{{ __('Edit User Data.') }}</h1>
                 <p class="muted">{{ __('Update user contact info, password, and system role permissions.') }}</p>
             </div>

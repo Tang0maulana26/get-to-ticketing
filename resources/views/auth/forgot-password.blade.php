@@ -20,12 +20,12 @@
 
             @if(session('demo_reset_link'))
                 <div class="demo-note mb-4" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px;">
-                    <strong style="color: #1e40af;">Simulasi Demo Lokal:</strong>
+                    <strong style="color: #1e40af;">{{ __('Password Reset Link:') }}</strong>
                     <p class="small-copy mt-1" style="color: #1e3a8a;">
-                        Pada mode portofolio lokal tanpa server email eksternal, Anda dapat langsung mengklik tautan di bawah ini:
+                        {{ __('Click the button below to proceed with setting your new password:') }}
                     </p>
                     <a href="{{ session('demo_reset_link') }}" class="button small secondary mt-2" style="display: inline-block;">
-                        Buka Formulir Kata Sandi Baru ↗
+                        {{ __('Open New Password Form ↗') }}
                     </a>
                 </div>
             @endif

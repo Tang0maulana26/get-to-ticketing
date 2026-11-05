@@ -24,7 +24,7 @@ class DiscountCheckController extends Controller
         if (! $discount) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Kode diskon tidak ditemukan.',
+                'message' => __('Discount code not found.'),
             ], 422);
         }
 
@@ -32,7 +32,7 @@ class DiscountCheckController extends Controller
         if (! $discount->isApplicable($subtotal, $reason, $eventId)) {
             return response()->json([
                 'ok' => false,
-                'message' => $reason ?? 'Kode diskon tidak dapat digunakan.',
+                'message' => $reason ?? __('Discount code cannot be applied.'),
             ], 422);
         }
 
@@ -47,7 +47,7 @@ class DiscountCheckController extends Controller
             'value' => $discount->value,
             'discount_amount' => $discountAmount,
             'final_total' => $finalTotal,
-            'message' => 'Kode diskon ' . $discount->code . ' berhasil digunakan!',
+            'message' => __('Discount code :code applied successfully!', ['code' => $discount->code]),
         ]);
     }
 }

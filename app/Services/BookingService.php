@@ -68,11 +68,11 @@ class BookingService
             if ($cleanCode !== '') {
                 $discount = Discount::where('code', $cleanCode)->lockForUpdate()->first();
                 if (! $discount) {
-                    $this->fail('discount_code', 'Kode diskon tidak ditemukan.');
+                    $this->fail('discount_code', __('Discount code not found.'));
                 }
                 $reason = null;
                 if (! $discount->isApplicable($subtotal, $reason, $event->id)) {
-                    $this->fail('discount_code', $reason ?? 'Kode diskon tidak dapat digunakan.');
+                    $this->fail('discount_code', $reason ?? __('Discount code cannot be applied.'));
                 }
                 $discountAmount = $discount->calculateDiscount($subtotal);
                 $discount->increment('used_count');
@@ -293,7 +293,7 @@ class BookingService
             return [
                 'ok' => false,
                 'status' => 'not_found',
-                'message' => 'Format kode tiket tidak valid atau tiket tidak terdaftar di sistem.',
+                'message' => __('Invalid ticket code format or ticket is not registered in the system.'),
             ];
         }
 
@@ -302,7 +302,7 @@ class BookingService
             return [
                 'ok' => false,
                 'status' => 'forged',
-                'message' => 'PERINGATAN: Tanda tangan digital tiket tidak cocok! Kemungkinan tiket palsu / dimodifikasi.',
+                'message' => __('WARNING: Digital cryptographic signature mismatch! Ticket may be forged or tampered.'),
             ];
         }
 
@@ -317,7 +317,7 @@ class BookingService
                 return [
                     'ok' => false,
                     'status' => 'not_found',
-                    'message' => 'Tiket tidak ditemukan dalam sistem database.',
+                    'message' => __('Ticket code was not found in the database.'),
                 ];
             }
 
@@ -326,7 +326,7 @@ class BookingService
                 return [
                     'ok' => false,
                     'status' => 'unpaid',
-                    'message' => 'Tiket ini berasal dari pesanan yang belum lunas atau telah kedaluwarsa.',
+                    'message' => __('This ticket belongs to an unpaid or expired order.'),
                 ];
             }
 
@@ -335,7 +335,7 @@ class BookingService
                 return [
                     'ok' => false,
                     'status' => 'wrong_event',
-                    'message' => 'Tiket ini terdaftar untuk acara konser yang berbeda.',
+                    'message' => __('This ticket is registered for a different concert event.'),
                     'ticket' => $ticket,
                 ];
             }
@@ -347,7 +347,7 @@ class BookingService
                 return [
                     'ok' => false,
                     'status' => 'gate_closed',
-                    'message' => 'SISTEM SCAN DIKUNCI: Pemindaian pintu masuk untuk event ini sedang dimatikan sementara oleh Admin.',
+                    'message' => __('GATE LOCKED: Ticket scanning for this event is currently disabled by Admin.'),
                     'ticket' => $ticket,
                 ];
             }
@@ -364,18 +364,22 @@ class BookingService
                     return [
                         'ok' => false,
                         'status' => 'too_early',
-                        'message' => "BELUM WAKTUNYA SCAN: Gate baru dibuka mulai {$openStr} ({$hoursBefore} jam sebelum jadwal konser {$startStr}).",
+                        'message' => __('NOT OPEN YET: Gate opens at :open (:hours hours before event start :start).', [
+                            'open' => $openStr,
+                            'hours' => $hoursBefore,
+                            'start' => $startStr,
+                        ]),
                         'ticket' => $ticket,
                     ];
                 }
             }
 
             if ($ticket->status === 'used' || $ticket->checked_in_at !== null) {
-                $time = $ticket->checked_in_at ? $ticket->checked_in_at->format('H:i:s') . ' WIB' : 'sebelumnya';
+                $time = $ticket->checked_in_at ? $ticket->checked_in_at->format('H:i:s') . ' WIB' : __('earlier');
                 return [
                     'ok' => false,
                     'status' => 'already_used',
-                    'message' => "PERINGATAN: Tiket sudah digunakan untuk check-in pada pukul {$time}!",
+                    'message' => __('WARNING: This ticket was already used for check-in at :time!', ['time' => $time]),
                     'ticket' => $ticket,
                 ];
             }
@@ -389,7 +393,7 @@ class BookingService
             return [
                 'ok' => true,
                 'status' => 'valid',
-                'message' => 'Check-in berhasil! Tiket valid.',
+                'message' => __('Check-in successful! Ticket is valid.'),
                 'ticket' => $ticket,
             ];
         }, 3);

@@ -54,35 +54,35 @@ class Discount extends Model
     public function isApplicable(int $subtotal, ?string &$reason = null, ?int $eventId = null): bool
     {
         if (! $this->active) {
-            $reason = 'Kode diskon tidak aktif.';
+            $reason = __('This discount code is inactive.');
             return false;
         }
 
         if ($this->event_id !== null) {
             if ($eventId === null || (int) $eventId !== (int) $this->event_id) {
-                $eventTitle = $this->event?->title ?? 'acara tertentu';
-                $reason = "Kode diskon ini khusus berlaku untuk event \"{$eventTitle}\".";
+                $eventTitle = $this->event?->title ?? __('a specific event');
+                $reason = __('This discount code is only valid for ":event".', ['event' => $eventTitle]);
                 return false;
             }
         }
 
         if ($this->start_time && now()->lt($this->start_time)) {
-            $reason = 'Kode diskon belum dapat digunakan.';
+            $reason = __('This discount code is not active yet.');
             return false;
         }
 
         if ($this->end_time && now()->gt($this->end_time)) {
-            $reason = 'Kode diskon sudah kedaluwarsa.';
+            $reason = __('This discount code has expired.');
             return false;
         }
 
         if ($this->usage_limit !== null && $this->used_count >= $this->usage_limit) {
-            $reason = 'Kuota penggunaan kode diskon sudah habis.';
+            $reason = __('This discount code usage limit has been reached.');
             return false;
         }
 
         if ($subtotal < $this->min_order_amount) {
-            $reason = 'Minimal pembelian untuk kode ini adalah Rp' . number_format($this->min_order_amount, 0, ',', '.') . '.';
+            $reason = __('Minimum purchase for this promo code is Rp:amount.', ['amount' => number_format($this->min_order_amount, 0, ',', '.')]);
             return false;
         }
 

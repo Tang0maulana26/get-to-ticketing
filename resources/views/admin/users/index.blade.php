@@ -3,7 +3,6 @@
     <section class="shell page-space">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">USER & ROLE MANAGEMENT</p>
                 <h1>{!! __('Users & Roles.') !!}</h1>
                 <p class="muted">{{ __('Manage registered accounts, switch admin/customer roles, and update user records.') }}</p>
             </div>

@@ -3,7 +3,6 @@
     <section class="shell page-space"><a class="back-link" href="{{ route('admin.events.index') }}">← {{ __('Events & tickets') }}</a>
         <div class="section-heading">
             <div>
-                <p class="eyebrow">EVENT EDITOR</p>
                 <h1>{{ $event->exists ? __('Manage your event.') : __('Start a new story.') }}</h1>
                 <p class="muted">{{ __('Fill in event details, then manage ticket options and quotas.') }}</p>
             </div>@if($event->exists && $event->status === 'published')<a class="button secondary" href="{{ route('events.show', $event->slug) }}">{{ __('View event page ↗') }}</a>@endif

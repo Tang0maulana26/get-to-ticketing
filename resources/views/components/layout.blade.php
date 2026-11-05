@@ -155,7 +155,7 @@
             <span>the get to <span class="brand-dot">•</span></span>
         </a>
         <p>{{ __('Good event. Real moments •') }}</p>
-        <span>© {{ date('Y') }} The Get To · {{ __('Portfolio demo') }}</span>
+        <span>© {{ date('Y') }} The Get To · {{ __('All rights reserved') }}</span>
     </footer>
 </body>
 

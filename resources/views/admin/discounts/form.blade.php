@@ -5,7 +5,6 @@
 
         <div class="section-heading">
             <div>
-                <p class="eyebrow">DISCOUNT BUILDER</p>
                 <h1>{{ $isEdit ? __('Update discount.') : __('Create new discount code.') }}</h1>
                 <p class="muted">{{ __('Set discount rules, usage quotas, and promotional validity period.') }}</p>
             </div>

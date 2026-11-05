@@ -3,7 +3,6 @@
     <section class="shell page-space">
         <div class="section-heading">
             <div>
-                <p class="eyebrow">CUSTOMER OVERVIEW</p>
                 <h1>{{ __('Customers.') }}</h1>
                 <p class="muted">{{ __('Customer summary and purchasing activity.') }}</p>
             </div>
