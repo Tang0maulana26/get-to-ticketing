@@ -32,6 +32,11 @@ Silakan baca dokumen berikut secara berurutan atau langsung menuju topik yang in
 - Konfigurasi keamanan *Content Security Policy* (`SecurityHeaders.php`).
 - Tips menjalankan server lokal (Laravel Herd vs `php artisan serve` + Vite) dan cara mengatasi kendala umum (*troubleshooting*).
 
+### 5. [Deployment Cloud: Database Supabase & Web Hosting Gratis (`05-deployment-supabase-dan-render.md`)](05-deployment-supabase-dan-render.md)
+- Panduan lengkap menghubungkan PostgreSQL cloud di Supabase (Session Pooler IPv4).
+- Cara kerja kontainerisasi `Dockerfile` (Multi-stage Node 22 + PHP 8.4-FPM + Nginx).
+- Langkah demi langkah publikasi gratis ke Render.com beserta pengaturan Environment Variables.
+
 ---
 
 ## Ringkasan Cepat Perintah Penting
