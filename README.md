@@ -1,116 +1,100 @@
 # Get To Ticketing
 
-Get To Ticketing adalah proyek belajar full-stack untuk membangun aplikasi pemesanan tiket konser. Proyek ini dibuat sebagai latihan memahami alur aplikasi dari tampilan, validasi, database, sampai transaksi pemesanan, sekaligus menjadi bahan portofolio.
+**Get To Ticketing** adalah aplikasi web *full-stack* pemesanan tiket konser dan manajemen *gate check-in* berbasis **Laravel 13** dan **PostgreSQL**. Proyek ini dirancang sebagai portofolio rekayasa perangkat lunak untuk mendemonstrasikan pengelolaan transaksi konkuren, keamanan tiket kriptografis, serta operasional pemindaian tiket secara *real-time* maupun *offline*.
 
-Fokus awalnya adalah konser. Struktur event dan kategori dibuat agar dapat digunakan kembali untuk jenis acara lain di masa depan. Aplikasi ini masih dalam tahap belajar dan belum siap digunakan untuk transaksi nyata.
+---
 
-## Tujuan belajar
+## Fitur Utama
 
-Lewat proyek ini, saya berlatih untuk:
+### 1. Katalog & Pemesanan Tiket (*Ticketing & Checkout*)
+- **Eksplorasi & Filter Acara:** Pencarian konser berdasarkan kata kunci, kategori, dan kota dengan antarmuka responsif (*light/dark mode*).
+- **Penguncian Stok Konkuren:** Menggunakan transaksi database dan *row-level locking* (`SELECT ... FOR UPDATE`) untuk mencegah *overselling* saat terjadi pemesanan bersamaan.
+- **Idempotensi & Reservasi Waktu:** Setiap sesi checkout dilindungi `checkout_key` unik dengan batas waktu pembayaran **15 menit** sebelum kuota otomatis dilepas kembali.
+- **Kode Promo & Diskon:** Validasi kupon diskon (persentase maupun nominal tetap) secara interaktif sebelum checkout.
 
-- Membangun aplikasi dengan PHP dan Laravel.
-- Membuat halaman dengan Blade dan styling Tailwind CSS.
-- Mengelola data menggunakan PostgreSQL, migration, dan Eloquent ORM.
-- Membuat autentikasi, validasi form, dan pembatasan akses admin.
-- Menjaga stok tiket saat beberapa pemesanan terjadi bersamaan.
-- Menyusun komponen dan alur yang dapat dikembangkan kembali.
+### 2. Pembayaran & Penerbitan E-Ticket
+- **Simulasi Lokal & Integrasi Xendit Sandbox:** Mendukung penyelesaian pembayaran instan untuk pengujian lokal maupun pembuatan tagihan (*invoice*) melalui API Xendit Sandbox beserta *webhook callback*.
+- **E-Ticket PDF & Email Otomatis:** Menerbitkan kode tiket UUID unik pasca-pembayaran, lengkap dengan unduhan E-Ticket PDF (`DomPDF`), pengiriman ke email pembeli, serta tampilan *Mobile QR Pass*.
+- **Manajemen Riwayat Tiket:** Halaman *"My Tickets"* dilengkapi pengelompokan tab **Semua Pesanan**, **Tiket Aktif**, dan **Riwayat Tiket Lalu**.
 
-## Fitur yang sudah tersedia
+### 3. Gate Check-In & Scanner (*Hybrid Online/Offline*)
+- **Multi-Input Scanner:** Mendukung pemindaian melalui kamera ponsel/webcam (`jsQR`), unggah gambar QR, input kode manual, hingga alat *barcode/PDA laser scanner* fisik.
+- **Verifikasi Kriptografis Anti-Pemalsuan:** Setiap QR tiket dilengkapi tanda tangan digital **HMAC-SHA256** (`UUID.Signature`) untuk mencegah pemalsuan tiket.
+- **Mode Offline & Auto-Sync 2 Arah:** Panitia dapat mengunduh *manifest* tiket ke penyimpanan perangkat untuk memindai tanpa koneksi internet, lalu menyinkronkan antrean *check-in* secara otomatis antar-perangkat saat kembali *online*.
+- **Pengaman Operasional:** Dilengkapi pengatur waktu buka gate (*start-time window lock*), modal konfirmasi 2 langkah pada aksi manual, serta opsi penyimpanan riwayat scan lokal.
 
-- Katalog konser dengan filter kategori.
-- Halaman detail event yang memuat poster, deskripsi, lokasi, dan pilihan tiket.
-- Registrasi, login, dan riwayat tiket pengguna.
-- Pemesanan dengan reservasi stok selama 15 menit.
-- Pembayaran demo lokal untuk menyelesaikan pesanan.
-- Admin untuk mengelola event dan kategori tiket, termasuk nama kategori seperti Regular atau VIP.
-- Data demo event dan poster ilustrasi fiktif.
+### 4. Panel Admin & Keamanan Sistem
+- **Dashboard & Manajemen Acara:** Statistik penjualan dan kehadiran gate, CRUD event dan kategori tiket (dengan proteksi kuota tiket yang sudah terjual), serta CRUD kode diskon.
+- **Manajemen Peran & Reset Data Aman:** Pengaturan hak akses (`admin`, `gate_staff`, `customer`), ekspor data pelanggan ke CSV, serta fitur *Reset Data Pembeli* berpengaman ganda tanpa merusak data master konser.
+- **Dwibahasa & Keamanan Ketat:** Mendukung Bahasa Indonesia dan Inggris (`ID` / `EN`) secara penuh, dilengkapi *Content Security Policy* (CSP) ketat, proteksi CSRF, dan *rate limiting*.
 
-Pembayaran hanya simulasi. Integrasi payment gateway, denah kursi, QR check-in, dukungan film, dan deployment belum dibuat.
+---
 
-## Teknologi
+## Teknologi yang Digunakan
 
-- PHP 8.3+
-- Laravel 13
-- PostgreSQL
-- Blade
-- Tailwind CSS 4
-- Vite dan npm
+| Lapisan | Teknologi |
+| :--- | :--- |
+| **Backend** | PHP 8.3+, Laravel 13 |
+| **Database** | PostgreSQL (Transaksi & Row Locking) |
+| **Frontend** | Blade, Tailwind CSS 4, Vanilla JavaScript, Vite |
+| **Dokumen & QR** | `barryvdh/laravel-dompdf`, `chillerlan/php-qrcode`, `jsQR` (Self-hosted) |
+| **Payment Gateway** | Xendit Invoice API (Sandbox) & Local Instant Simulator |
+| **Pengujian** | PHPUnit (83 Feature & Unit Tests, 381 Assertions) |
 
-Laravel menangani backend dan halaman server. Node.js/npm hanya digunakan untuk memasang serta membangun aset frontend.
+---
 
-## Menjalankan secara lokal
+## Menjalankan Secara Lokal (*Quick Start*)
 
-Pastikan PHP, Composer, Node.js/npm, dan PostgreSQL sudah terpasang dan server PostgreSQL sedang berjalan. Laravel Herd dapat menyediakan PHP di Windows. Perintah `php artisan serve` menjalankan server web pengembangan.
+Pastikan **PHP 8.3+**, **Composer**, **Node.js/npm**, dan **PostgreSQL** sudah terpasang dan aktif di komputer lokal.
 
-1. Clone repository, lalu buka terminal pada folder proyek.
-2. Pasang dependensi dan salin konfigurasi lingkungan:
+```powershell
+# 1. Pasang dependensi PHP dan frontend
+composer install
+npm install
 
-   ```powershell
-   composer install
-   Copy-Item .env.example .env
-   npm install
-   ```
+# 2. Salin konfigurasi environment dan buat app key
+Copy-Item .env.example .env
+php artisan key:generate
 
-3. Ubah konfigurasi database dalam `.env` menjadi PostgreSQL dan isi koneksi lokalmu:
+# 3. Sesuaikan koneksi PostgreSQL di .env, lalu buat database lokal & test
+php scripts/create-local-databases.php
 
-   ```dotenv
-   DB_CONNECTION=pgsql
-   DB_HOST=127.0.0.1
-   DB_PORT=5432
-   DB_DATABASE=ticketing_local
-   DB_USERNAME=postgres
-   DB_PASSWORD=password-postgres-lokal
-   ```
+# 4. Jalankan migrasi skema dan data awal (seeder)
+php artisan migrate --seed
 
-   Sesuaikan port, pengguna, dan sandi dengan instalasi PostgreSQL di komputermu. Jangan commit file `.env`.
+# 5. Bangun aset produksi frontend dan jalankan server
+npm run build
+php artisan serve
+```
 
-4. Buat application key dan database lokal:
+> **Catatan Kredensial Demo:** Saat `migrate --seed` dijalankan, sistem membuat akun demo (`admin` dan `customer`) dengan kata sandi acak yang tersimpan secara lokal di `storage/app/private/demo-accounts.json`.
 
-   ```powershell
-   php artisan key:generate
-   php scripts/create-local-databases.php
-   ```
+---
 
-   Script database membuat `ticketing_local` dan `ticketing_test` bila belum ada. Pengguna PostgreSQL yang dipakai perlu memiliki izin membuat database.
+## Pengujian Otomatis
 
-5. Jalankan migration dan isi data demo:
-
-   ```powershell
-   php artisan migrate --seed
-   ```
-
-   Akun demo dibuat dengan sandi acak. Kredensialnya disimpan lokal di `storage/app/private/demo-accounts.json`; jangan membagikan atau mengunggah file itu.
-
-6. Buka dua terminal pada folder proyek. Jalankan server Laravel di terminal pertama dan Vite di terminal kedua:
-
-   ```powershell
-   php artisan serve
-   ```
-
-   ```powershell
-   npm run dev
-   ```
-
-   Buka alamat yang ditampilkan oleh Artisan, biasanya http://127.0.0.1:8000.
-
-## Menjalankan pengujian
-
-Atur `.env.testing` agar memakai database terpisah `ticketing_test`, lalu jalankan:
+Pastikan `.env.testing` mengarah ke database pengujian terpisah (`ticketing_test`), lalu jalankan:
 
 ```powershell
 php artisan test
 ```
 
-Hasil pengujian terakhir yang tercatat saat dokumentasi ini diperbarui adalah 23 tes lulus dengan 97 assertion. Jalankan ulang tes setelah mengubah kode untuk mengetahui kondisi terbaru.
+Status pengujian saat ini: **83 tes lulus (381 assertions)** — mencakup alur katalog, penguncian stok checkout, diskon, pembayaran, pembuatan PDF, otorisasi peran, hingga pemindaian gate.
 
-## Keamanan data lokal
+---
 
-File `.env`, kredensial demo, dan data PostgreSQL lokal tidak seharusnya masuk ke Git. Migration mengubah struktur database; hindari perintah yang menghapus dan membuat ulang database jika masih ada data yang ingin disimpan.
+## Dokumentasi Teknis Lengkap (`docs/`)
 
-## Catatan pengembangan
+Penjelasan mendalam mengenai cara kerja kode, arsitektur database, alur transaksi, dan mekanisme kerja tiap fitur tersedia di dalam folder **[`docs/`](docs/README.md)**:
 
-Proyek ini masih dikembangkan sebagai sarana belajar. Sebelum dipakai oleh pengguna sungguhan, aplikasi memerlukan pemeriksaan keamanan dan alur secara menyeluruh, payment gateway, pengelolaan data dan gambar untuk server, serta konfigurasi deployment.
+1. **[Indeks Dokumentasi](docs/README.md)** — Panduan pengantar dan daftar isi dokumentasi.
+2. **[Arsitektur & Struktur Kode](docs/01-arsitektur-dan-struktur-kode.md)** — Peta direktori, alur *request-response*, dan relasi tabel database.
+3. **[Alur Checkout, Penguncian Stok & Pembayaran](docs/02-alur-checkout-stok-dan-pembayaran.md)** — Bedah cara kerja `BookingService`, reservasi 15 menit, validasi diskon, Xendit, dan penerbitan E-Ticket PDF.
+4. **[Sistem Gate Scanner & Sinkronisasi Offline](docs/03-sistem-gate-scanner-dan-offline-sync.md)** — Cara kerja kamera/PDA scanner, tanda tangan HMAC-SHA256, *offline manifest*, dan *2-way sync*.
+5. **[Frontend, Dwibahasa, Keamanan & Operasional](docs/04-frontend-dwibahasa-dan-keamanan.md)** — Struktur kamus bahasa `lang/`, aturan CSP, manajemen admin, dan panduan *troubleshooting* lokal.
+
+---
 
 ## Lisensi
 
-Proyek ini menggunakan lisensi [MIT](LICENSE).
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
